@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>如果咁樣做會點</title>
+</head>
+<body>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700;900&display=swap">
+<style>
+/* Layout: black stage; white picture panel with an animated cartoon kid; big yellow subtitles under it; giant controls along the bottom */
+:root{--bg:#000000;--panel:#F7FBF6;--ink:#000000;--fg:#FFFFFF;--sun:#FFD84D;--orange:#F08A3C;--navy:#1F3A68;--card:#1A1A1A;--f:'Noto Sans TC','PingFang HK','Microsoft JhengHei',sans-serif;color-scheme:dark}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:flex;flex-direction:column;gap:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 10px;box-sizing:border-box}
+.top{display:flex;align-items:center;gap:12px}
+.pill{font-size:clamp(22px,2.6vw,32px);font-weight:900;color:var(--ink);background:var(--sun);border-radius:14px;padding:2px 16px}
+.dots{margin-left:auto;display:flex;gap:8px}
+.dots i{width:16px;height:16px;border-radius:50%;border:3px solid var(--sun);box-sizing:border-box}
+.dots i.done{background:var(--sun)}
+.dots i.now{background:var(--orange);border-color:var(--orange)}
+.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.panel{height:100%;width:100%;background:var(--panel);border:6px solid var(--sun);border-radius:28px;overflow:hidden;box-sizing:border-box;position:relative}
+.panel svg{width:100%;height:100%;display:block}
+.sub{min-height:1.4em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(30px,4vw,52px);font-weight:900;color:var(--sun);line-height:1.25;text-wrap:balance}
+.ctrl{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.ctrl button{font-family:inherit;font-weight:900;font-size:clamp(24px,3vw,36px);color:var(--ink);background:#FFFFFF;border:5px solid #FFFFFF;border-radius:24px;padding:6px 22px;min-height:70px;min-width:150px;cursor:pointer;box-shadow:0 6px 0 #666666}
+.ctrl button:active{transform:translateY(4px);box-shadow:0 2px 0 #666666}
+.ctrl #play{background:var(--sun);border-color:var(--sun);min-width:220px}
+button:focus-visible{outline:5px solid var(--orange);outline-offset:4px}
+.ctrl button[disabled]{opacity:.35}
+/* HTML scenes (title, steps, end) */
+.card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3%;color:var(--navy);padding:4%;box-sizing:border-box;text-align:center}
+.card h1{margin:0;font-size:clamp(34px,6vw,84px);font-weight:900;line-height:1.2}
+.card .big{width:28%;aspect-ratio:1/1}
+.card .big svg{width:100%;height:100%}
+.steps{display:flex;flex-direction:column;gap:3%;width:100%;height:100%;justify-content:center}
+.step{display:flex;align-items:center;gap:4%;background:#FFF7E8;border:5px solid var(--navy);border-radius:24px;padding:2% 4%;opacity:0;transform:translateX(-40px);transition:opacity .5s,transform .5s}
+.step.in{opacity:1;transform:none}
+.step b{flex:none;width:clamp(48px,7vw,84px);aspect-ratio:1/1;border-radius:50%;background:var(--orange);color:#FFFFFF;font-size:clamp(28px,4vw,48px);display:flex;align-items:center;justify-content:center}
+.step span.ic{flex:none;width:clamp(56px,9vw,110px);aspect-ratio:1/1}
+.step span.ic svg{width:100%;height:100%}
+.step p{margin:0;font-size:clamp(30px,5vw,64px);font-weight:900;text-align:left}
+.songc{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:3%}
+.songc h2{margin:0;font-size:clamp(30px,4.4vw,58px);font-weight:900;color:var(--navy)}
+.songc h2 small{font-size:.5em;color:#4A5A78}
+.lyr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2% 6%;justify-items:start;padding:0 4%}
+.ln{font-size:clamp(30px,4.8vw,66px);font-weight:900;letter-spacing:.04em;white-space:nowrap;color:var(--navy);line-height:1.25}
+.ln span{border-radius:12px;padding:0 3px;transition:background .1s}
+.ln span.sing{background:var(--sun)}
+.prog2{width:70%;min-height:18px;height:18px;flex:none;border:3px solid #1F3A68;background:#DDE3EA;border-radius:10px;overflow:hidden}.prog2 i{display:block;height:100%;width:0;background:var(--orange)}
+.card h1 .note{display:inline-block;animation:float 1s ease-in-out infinite}
+.singbtn{align-self:center;font-family:inherit;font-size:clamp(24px,3vw,36px);font-weight:900;color:var(--ink);background:var(--sun);border:5px solid var(--navy);border-radius:22px;padding:6px 28px;cursor:pointer}
+/* kid rig */
+#kid *{transition:fill .5s}
+#rarm,#larm{transform-box:view-box;transition:transform .7s ease}
+#rarm{transform-origin:240px 175px}
+#larm{transform-origin:160px 175px}
+#rarm{transform:rotate(20deg)} #larm{transform:rotate(-20deg)}
+[data-arm=eat] #rarm{animation:eat 1.4s ease-in-out infinite}
+.fast[data-arm=eat] #rarm{animation-duration:.55s}
+.slow[data-arm=eat] #rarm{animation-duration:2.6s}
+@keyframes eat{0%,100%{transform:rotate(25deg)}50%{transform:rotate(137deg)}}
+[data-arm=mouth] #rarm{transform:rotate(132deg)}
+[data-arm=down] #rarm{transform:rotate(-12deg)}
+[data-arm=cover] #rarm{transform:rotate(140deg)}
+[data-arm=point] #rarm{transform:rotate(100deg)}
+[data-arm=push] #rarm{transform:rotate(-38deg)}
+[data-arm=fan] #rarm{animation:fan .5s ease-in-out infinite}
+@keyframes fan{0%,100%{transform:rotate(118deg)}50%{transform:rotate(146deg)}}
+#larmUp{opacity:0;transform-box:view-box;transform-origin:160px 178px;transform:rotate(-40deg);transition:opacity .3s,transform .5s cubic-bezier(.3,1.5,.6,1)}
+[data-larm=raise] #larm{opacity:0} [data-larm=raise] #larmUp{opacity:1;transform:none}
+[data-larm=rub] #larm{animation:rub 1s ease-in-out infinite}
+@keyframes rub{0%,100%{transform:rotate(-48deg)}50%{transform:rotate(-66deg)}}
+#spoonHand{transition:opacity .3s} [data-spoon=table] #spoonHand,[data-spoon=none] #spoonHand{opacity:0}
+#spoonTable{opacity:0;transition:opacity .3s .4s} [data-spoon=table] #spoonTable{opacity:1}
+#head{fill:#FFD9B8} [data-face=red] #head{fill:#F4A08C} [data-face=green] #head{fill:#C9E6BE}
+.eyesX,.mOpen,.mFlat,.mWave{display:none}
+[data-eyes=x] .eyesN{display:none} [data-eyes=x] .eyesX{display:inline}
+[data-mouth=open] .mSmile,[data-mouth=flat] .mSmile,[data-mouth=wave] .mSmile{display:none}
+[data-mouth=open] .mOpen{display:inline} [data-mouth=flat] .mFlat{display:inline} [data-mouth=wave] .mWave{display:inline}
+#think{opacity:0;transform-box:view-box;transform-origin:322px 62px;transform:scale(.3);transition:opacity .4s,transform .4s cubic-bezier(.3,1.6,.6,1)}
+[data-think] #think{opacity:1;transform:none}
+.th{display:none}
+[data-think=bite] .th-bite,[data-think=choke] .th-choke,[data-think=full] .th-full,[data-think=sick] .th-sick,[data-think=hot] .th-hot{display:inline}
+#say{opacity:0;transform-box:view-box;transform-origin:70px 60px;transform:scale(.3);transition:opacity .3s,transform .4s cubic-bezier(.3,1.6,.6,1)}
+[data-say] #say{opacity:1;transform:none}
+#help{transform:translateX(130px);opacity:0;transition:transform .9s ease,opacity .4s}
+[data-help] #help{transform:none;opacity:1}
+#helpArm{transform-box:view-box;transform-origin:350px 180px;animation:wave 1s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+#steam{opacity:0;transition:opacity .4s} [data-steam] #steam{opacity:1}
+#steam path{animation:rise 1.4s linear infinite}
+#steam path:nth-child(2){animation-delay:.45s} #steam path:nth-child(3){animation-delay:.9s}
+@keyframes rise{0%{transform:translateY(8px);opacity:0}30%{opacity:1}100%{transform:translateY(-22px);opacity:0}}
+#belly{transform-box:view-box;transform-origin:200px 200px;transform:scale(.2);opacity:0;transition:transform 2.5s ease,opacity .5s}
+[data-belly] #belly{transform:scale(1);opacity:1}
+#bowl{transition:transform .8s ease} [data-bowl=away] #bowl{transform:translateX(70px)}
+#turtle{opacity:0;transition:opacity .5s} [data-turtle] #turtle{opacity:1;animation:walk 3s ease-in-out infinite alternate}
+@keyframes walk{from{transform:translate(-20px,0)}50%{transform:translate(10px,-3px)}to{transform:translate(40px,0)}}
+#ouch{opacity:0} [data-ouch] #ouch{animation:ouch .6s ease-out 2}
+@keyframes ouch{0%{opacity:0;transform:scale(.6)}40%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+#ouch{transform-box:view-box;transform-origin:205px 138px}
+.bob{animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.eyesN{transform-box:fill-box;transform-origin:center;animation:blink 3.6s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.float{animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.tw{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}
+.tw.t2{animation-delay:.6s}.tw.t3{animation-delay:1.2s}
+@keyframes tw{0%,100%{transform:scale(.5) rotate(0);opacity:.4}50%{transform:scale(1.2) rotate(45deg);opacity:1}}
+[data-larm=raise] #larmUp{animation:hiwave .9s ease-in-out infinite}
+@keyframes hiwave{0%,100%{transform:rotate(0)}50%{transform:rotate(10deg)}}
+[data-arm=point] #rarm{animation:pt 1s ease-in-out infinite}
+@keyframes pt{0%,100%{transform:rotate(96deg)}50%{transform:rotate(104deg)}}
+[data-arm=cover] #rarm{animation:cv 1.2s ease-in-out infinite}
+@keyframes cv{0%,100%{transform:rotate(136deg)}50%{transform:rotate(144deg)}}
+[data-arm=down] #rarm{animation:dn 2.4s ease-in-out infinite}
+@keyframes dn{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(-6deg)}}
+[data-arm=mouth] #rarm{animation:mo .4s ease-in-out infinite}
+@keyframes mo{0%,100%{transform:rotate(128deg)}50%{transform:rotate(136deg)}}
+#turtle .tleg{animation:bob .5s ease-in-out infinite}
+.card .big{animation:float 1.6s ease-in-out infinite}
+.step.in .ic{animation:float 1.6s ease-in-out infinite}
+.pill.bad{background:#E5483A;color:#FFFFFF}
+[data-think=q] .th-q{display:inline}
+#crumbs,#tears{opacity:0}
+[data-crumbs] #crumbs{opacity:1}
+#crumbs circle{animation:crumb .7s ease-out infinite}
+#crumbs circle:nth-child(2){animation-delay:.25s;--dx:-30px}
+#crumbs circle:nth-child(3){animation-delay:.5s}
+@keyframes crumb{0%{transform:translate(0,0);opacity:1}100%{transform:translate(26px,30px);opacity:0}}
+[data-tears] #tears{opacity:1}
+#tears path{animation:tear 1s ease-in infinite}
+#tears path:nth-child(2){animation-delay:.5s}
+@keyframes tear{0%{transform:translateY(0);opacity:1}100%{transform:translateY(26px);opacity:0}}
+[data-chat] .mSmile{display:none}
+[data-chat] .mOpen{display:inline;transform-box:fill-box;transform-origin:center;animation:chat .28s ease-in-out infinite}
+@keyframes chat{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.3)}}
+@media (prefers-reduced-motion:reduce){#rarm,#larm,#steam path,#helpArm{animation:none!important}}
+</style>
+<div id="app">
+  <div class="top"><span class="pill" id="title">食飯唔舒服，點算好？</span><span class="dots" id="dots"></span></div>
+  <div class="stage"><div class="panel" id="panel">
+    <svg id="kid" viewBox="0 0 400 300" role="img" aria-label="卡通小朋友食飯">
+      <rect width="400" height="300" fill="#F7FBF6"/><g id="spark"><path class="tw" d="M30 150l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#FFD84D"/><path class="tw t2" d="M372 200l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#8EC9EE"/><path class="tw t3" d="M290 20l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#F08A3C"/></g>
+      <g id="help">
+        <path d="M318 300v-110q0-28 32-28t32 28v110z" fill="#7CC48F" stroke="#1F3A68" stroke-width="5"/>
+        <circle cx="350" cy="132" r="30" fill="#FFD9B8" stroke="#1F3A68" stroke-width="5"/>
+        <path d="M320 126q4-34 30-34t30 34q-10-14-30-14t-30 14z" fill="#5A3A22"/>
+        <circle cx="341" cy="132" r="4" fill="#1F3A68"/><circle cx="359" cy="132" r="4" fill="#1F3A68"/>
+        <path d="M340 146q10 8 20 0" fill="none" stroke="#1F3A68" stroke-width="4" stroke-linecap="round"/>
+        <g id="helpArm"><path d="M322 186l-34-22" stroke="#7CC48F" stroke-width="16" stroke-linecap="round"/><circle cx="286" cy="162" r="10" fill="#FFD9B8" stroke="#1F3A68" stroke-width="4"/></g>
+      </g>
+      <g transform="translate(110 268)"><g id="turtle"><ellipse rx="30" ry="18" fill="#7CC48F" stroke="#1F3A68" stroke-width="5"/><path d="M-16-4l8 8M0-14v16M16-4l-8 8" stroke="#3E9B4F" stroke-width="3"/><circle cx="34" cy="-4" r="9" fill="#B9E3C2" stroke="#1F3A68" stroke-width="4"/><circle cx="36" cy="-6" r="2" fill="#1F3A68"/></g></g>
+      <g class="bob">
+      <path d="M128 214q0-62 72-62t72 62z" fill="#8EC9EE" stroke="#1F3A68" stroke-width="5" stroke-linejoin="round"/>
+      <ellipse id="belly" cx="200" cy="200" rx="40" ry="22" fill="#8EC9EE" stroke="#1F3A68" stroke-width="5"/>
+      <g id="larm"><line x1="160" y1="175" x2="160" y2="200" stroke="#8EC9EE" stroke-width="18" stroke-linecap="round"/><line x1="160" y1="195" x2="160" y2="228" stroke="#FFD9B8" stroke-width="13" stroke-linecap="round"/><circle cx="160" cy="230" r="11" fill="#FFD9B8" stroke="#1F3A68" stroke-width="4"/></g>
+      <g id="larmUp"><line x1="160" y1="178" x2="148" y2="140" stroke="#8EC9EE" stroke-width="18" stroke-linecap="round"/><line x1="150" y1="146" x2="134" y2="92" stroke="#FFD9B8" stroke-width="13" stroke-linecap="round"/><circle cx="132" cy="86" r="12" fill="#FFD9B8" stroke="#1F3A68" stroke-width="4"/></g>
+      <circle id="head" cx="200" cy="112" r="50" stroke="#1F3A68" stroke-width="5"/>
+      <path d="M152 100q4-48 48-50 44 2 48 50q-20-26-48-24-28-2-48 24z" fill="#3B2416"/>
+      <g class="eyesN"><circle cx="182" cy="106" r="6" fill="#1F3A68"/><circle cx="218" cy="106" r="6" fill="#1F3A68"/></g>
+      <path class="eyesX" d="M175 100l14 6-14 6M225 100l-14 6 14 6" fill="none" stroke="#1F3A68" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="mSmile" d="M186 132q14 12 28 0" fill="none" stroke="#1F3A68" stroke-width="5" stroke-linecap="round"/>
+      <ellipse class="mOpen" cx="200" cy="138" rx="9" ry="11" fill="#7A2E2E" stroke="#1F3A68" stroke-width="4"/>
+      <path class="mFlat" d="M188 138h24" stroke="#1F3A68" stroke-width="5" stroke-linecap="round"/>
+      <path class="mWave" d="M184 138q4-6 8 0t8 0 8 0 8 0" fill="none" stroke="#1F3A68" stroke-width="4" stroke-linecap="round"/>
+      <g id="crumbs"><circle cx="212" cy="140" r="5" fill="#F2C14E" stroke="#1F3A68" stroke-width="2"/><circle cx="196" cy="142" r="4" fill="#C79A6B" stroke="#1F3A68" stroke-width="2"/><circle cx="206" cy="146" r="4" fill="#F2C14E" stroke="#1F3A68" stroke-width="2"/></g><g id="tears"><path d="M172 112q-5 10 0 14q5-4 0-14z" fill="#8EC9EE" stroke="#1F3A68" stroke-width="2"/><path d="M228 112q-5 10 0 14q5-4 0-14z" fill="#8EC9EE" stroke="#1F3A68" stroke-width="2"/></g>
+      <g id="ouch"><path d="M205 120l6-14M218 126l12-8M222 140h14" stroke="#E5483A" stroke-width="5" stroke-linecap="round"/></g>
+      </g>
+      <rect x="20" y="214" width="360" height="22" rx="8" fill="#C79A6B" stroke="#1F3A68" stroke-width="5"/>
+      <rect x="50" y="236" width="16" height="56" fill="#C79A6B" stroke="#1F3A68" stroke-width="4"/>
+      <rect x="334" y="236" width="16" height="56" fill="#C79A6B" stroke="#1F3A68" stroke-width="4"/>
+      <g id="bowl"><path d="M160 196h80q-4 22-40 22t-40-22z" fill="#FFFFFF" stroke="#1F3A68" stroke-width="5" stroke-linejoin="round"/><path d="M168 196q32-12 64 0" fill="#F2C14E"/>
+        <g id="steam"><path d="M184 186q-6-8 0-16t0-16" fill="none" stroke="#E5483A" stroke-width="4" stroke-linecap="round"/><path d="M200 186q-6-8 0-16t0-16" fill="none" stroke="#E5483A" stroke-width="4" stroke-linecap="round"/><path d="M216 186q-6-8 0-16t0-16" fill="none" stroke="#E5483A" stroke-width="4" stroke-linecap="round"/></g></g>
+      <g id="spoonTable"><path d="M262 211h40" stroke="#9FB3C8" stroke-width="7" stroke-linecap="round"/><ellipse cx="258" cy="211" rx="10" ry="6" fill="#D5DEEA" stroke="#1F3A68" stroke-width="3"/></g>
+      <g class="bob">
+      <g id="rarm"><line x1="240" y1="175" x2="240" y2="200" stroke="#8EC9EE" stroke-width="18" stroke-linecap="round"/><line x1="240" y1="195" x2="240" y2="228" stroke="#FFD9B8" stroke-width="13" stroke-linecap="round"/>
+        <g id="spoonHand"><line x1="240" y1="230" x2="240" y2="206" stroke="#9FB3C8" stroke-width="6" stroke-linecap="round"/><ellipse cx="240" cy="236" rx="7" ry="10" fill="#D5DEEA" stroke="#1F3A68" stroke-width="3"/></g>
+        <circle cx="240" cy="228" r="11" fill="#FFD9B8" stroke="#1F3A68" stroke-width="4"/></g>
+      </g>
+      <g id="think"><g class="float"><g class="th th-bite"><g transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"></circle><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><path d="M-16-6q16 30 32 0z" fill="#E86F7A" stroke="#1F3A68" stroke-width="4" stroke-linejoin="round"></path><path d="M14-22l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z" fill="#FFD84D" stroke="#1F3A68" stroke-width="3" stroke-linejoin="round"></path></g></g><g class="th th-choke"><g transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"></circle><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><path d="M-10-28v56M10-28v56" stroke="#1F3A68" stroke-width="5" stroke-linecap="round"></path><circle cx="0" cy="0" r="10" fill="#C79A6B" stroke="#1F3A68" stroke-width="4"></circle><path d="M18-18l8-6M18 18l8 6" stroke="#B42318" stroke-width="4" stroke-linecap="round"></path></g></g><g class="th th-full"><g transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"></circle><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><ellipse cx="0" cy="12" rx="26" ry="9" fill="#F08A3C" stroke="#1F3A68" stroke-width="4"></ellipse><ellipse cx="0" cy="0" rx="22" ry="8" fill="#8EC9EE" stroke="#1F3A68" stroke-width="4"></ellipse><ellipse cx="0" cy="-12" rx="18" ry="7" fill="#7CC48F" stroke="#1F3A68" stroke-width="4"></ellipse></g></g><g class="th th-sick"><g transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"></circle><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"></circle><path d="M-22 0q11-18 22 0t22 0M-22 14q11-18 22 0t22 0" fill="none" stroke="#3E9B4F" stroke-width="5" stroke-linecap="round"></path></g></g><g class="th th-hot"><g transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"/><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"/><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"/><rect x="-6" y="-26" width="12" height="40" rx="6" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"/><circle cx="0" cy="18" r="10" fill="#E5483A" stroke="#1F3A68" stroke-width="4"/><rect x="-2" y="-8" width="4" height="22" fill="#E5483A"/></g></g><g class="th th-q" transform="translate(322 62)"><circle r="44" fill="#FFFFFF" stroke="#1F3A68" stroke-width="4"/><circle cx="-34" cy="44" r="8" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"/><circle cx="-46" cy="60" r="5" fill="#FFFFFF" stroke="#1F3A68" stroke-width="3"/><text y="24" text-anchor="middle" font-size="68" font-weight="900" fill="#F08A3C" font-family="Noto Sans TC, sans-serif">?</text></g></g></g>
+      <g id="say"><g class="pulse"><rect x="6" y="8" width="112" height="58" rx="16" fill="#FFD84D" stroke="#1F3A68" stroke-width="4"/><text id="sayText" x="62" y="47" text-anchor="middle" font-size="24" font-weight="900" fill="#1F3A68" font-family="Noto Sans TC, sans-serif">我咬親！</text></g></g>
+    </svg>
+    <div class="card" id="card" hidden></div>
+  </div></div>
+  <div class="sub" id="sub" aria-live="polite">撳「▶ 開始」睇動畫</div>
+  <div class="ctrl">
+    <button id="prev" type="button">⏮ 上一段</button>
+    <button id="play" type="button">▶ 開始</button>
+    <button id="next" type="button">下一段 ⏭</button>
+  </div>
+</div>
+<script>
+const ICON={"star": "<svg viewBox=\"0 0 120 120\" aria-hidden=\"true\"><path d=\"M60 10l14 30 33 4-24 22 6 33-29-16-29 16 6-33-24-22 33-4z\" fill=\"#FFD84D\" stroke=\"#1F3A68\" stroke-width=\"6\" stroke-linejoin=\"round\"/><circle cx=\"48\" cy=\"58\" r=\"5\" fill=\"#1F3A68\"/><circle cx=\"72\" cy=\"58\" r=\"5\" fill=\"#1F3A68\"/><path d=\"M48 72q12 10 24 0\" fill=\"none\" stroke=\"#1F3A68\" stroke-width=\"5\" stroke-linecap=\"round\"/></svg>", "down": "<svg role=\"img\" aria-label=\"放低餐具\" viewBox=\"0 0 110 100\"><ellipse cx=\"55\" cy=\"66\" rx=\"44\" ry=\"16\" fill=\"#FFFFFF\" stroke=\"#1F3A68\" stroke-width=\"5\"/><path d=\"M30 34L78 52\" stroke=\"#1F3A68\" stroke-width=\"7\" stroke-linecap=\"round\"/><ellipse cx=\"24\" cy=\"32\" rx=\"11\" ry=\"7\" transform=\"rotate(20 24 32)\" fill=\"#D5DEEA\" stroke=\"#1F3A68\" stroke-width=\"4\"/><path d=\"M60 6v14M52 12l8 8 8-8\" fill=\"none\" stroke=\"#23663F\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>", "stop": "<svg role=\"img\" aria-label=\"停低唔食\" viewBox=\"0 0 110 100\"><circle cx=\"55\" cy=\"50\" r=\"40\" fill=\"#E5483A\" stroke=\"#1F3A68\" stroke-width=\"6\"/><path d=\"M33 50h44\" stroke=\"#FFFFFF\" stroke-width=\"12\" stroke-linecap=\"round\"/></svg>", "talk": "<svg role=\"img\" aria-label=\"講出嚟求助\" viewBox=\"0 0 110 100\"><path d=\"M16 14H94q8 0 8 8V56q0 8-8 8H48L28 82V64H16q-8 0-8-8V22q0-8 8-8Z\" fill=\"#FFD84D\" stroke=\"#1F3A68\" stroke-width=\"5\" stroke-linejoin=\"round\"/><circle cx=\"36\" cy=\"39\" r=\"6\" fill=\"#1F3A68\"/><circle cx=\"55\" cy=\"39\" r=\"6\" fill=\"#1F3A68\"/><circle cx=\"74\" cy=\"39\" r=\"6\" fill=\"#1F3A68\"/></svg>"};
+const K=(say,st)=>({say,st});
+const SC=[
+ {t:'如果我哋咁樣做……',kind:'card',html:`<div class="big">${ICON.star}</div><h1>如果我哋咁樣做……<br>會點呀？</h1>`,beats:[K('如果我哋咁樣做，會點呀？一齊睇吓！')]},
+ {t:'食得太快，一邊食一邊講嘢',kind:'kid',beats:[
+   K('小明食得好快，一啖接一啖。',{arm:'eat',fast:1,spoon:'hand',crumbs:1}),
+   K('佢仲一邊食，一邊講嘢。',{arm:'eat',fast:1,spoon:'hand',chat:1,say:'嘰哩呱啦',crumbs:1}),
+   K('你估吓，咁樣會點呀？',{arm:'down',spoon:'hand',think:'q',pause:2200}),
+   K('哎呀！咬親！',{ttl:'咬親、哽親',bad:1,arm:'mouth',spoon:'hand',eyes:'x',mouth:'open',think:'bite',ouch:1}),
+   K('仲會哽親，好辛苦！',{ttl:'咬親、哽親',bad:1,arm:'point',spoon:'table',eyes:'x',mouth:'open',face:'red',think:'choke'})]},
+ {t:'飽咗仲食',kind:'kid',beats:[
+   K('小明已經好飽喇。',{arm:'down',spoon:'hand',belly:1}),
+   K('但係佢仲繼續食，一啖又一啖。',{arm:'eat',spoon:'hand',belly:1,larm:'rub'}),
+   K('你估吓，咁樣會點呀？',{arm:'down',spoon:'hand',belly:1,think:'q',pause:2200}),
+   K('哎呀！個肚好脹，好唔舒服。',{ttl:'太飽，肚唔舒服',bad:1,arm:'down',spoon:'table',belly:1,larm:'rub',mouth:'flat',think:'full'}),
+   K('仲會想嘔添！',{ttl:'太飽，想嘔',bad:1,arm:'cover',spoon:'table',belly:1,face:'green',mouth:'wave',think:'sick'})]},
+ {t:'食物好熱，唔吹就食',kind:'kid',beats:[
+   K('碗飯好熱，仲出緊煙。',{arm:'down',spoon:'hand',steam:1}),
+   K('小明唔吹，就即刻食。',{arm:'eat',fast:1,spoon:'hand',steam:1}),
+   K('你估吓，咁樣會點呀？',{arm:'down',spoon:'hand',steam:1,think:'q',pause:2200}),
+   K('哎呀！好熱，辣親個口！',{ttl:'太熱，辣親',bad:1,arm:'fan',spoon:'table',steam:1,face:'red',eyes:'x',mouth:'open',think:'hot',tears:1})]},
+ {t:'點樣先唔會咁？',kind:'card',html:`<div class="big">${ICON.star}</div><h1>點樣先唔會咁？<br>我哋一齊學！</h1>`,beats:[K('咁點樣先唔會咁呢？我哋一齊學吓！')]},
+];
+const STEPS=[['放低餐具',ICON.down],['停一停',ICON.stop],['話俾人知',ICON.talk]];
+const SONG=[[['唔','C4',1],['舒','D4',1],['服','E4',1],['呀','C4',1]],[['唔','C4',1],['舒','D4',1],['服','E4',1],['呀','C4',1]],[['放','E4',1],['低','F4',1],['先','G4',2]],[['停','E4',1],['一','F4',1],['停','G4',2]],[['咬','G4',.5],['親','A4',.5],['哽','G4',.5],['親','F4',.5],['好','E4',1],['飽','C4',1]],[['舉','G4',.5],['手','A4',.5],['話','G4',.5],['俾','F4',.5],['人','E4',1],['知','C4',1]],[['慢','C4',1],['慢','G3',1],['食','C4',2]],[['飽','C4',1],['就','G3',1],['停','C4',2]]];
+const FREQ={G3:196,C3:130.81,C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440};
+let actx=null;function ac(){try{if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C()}if(actx&&actx.state==='suspended')actx.resume()}catch(e){}return actx}
+function tone(f,dur,vol,type){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t0=a.currentTime;o.type=type||'triangle';o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol||.3,t0+.03);g.gain.setValueAtTime(vol||.3,t0+dur*.7);g.gain.linearRampToValueAtTime(0,t0+dur*.95);o.connect(g).connect(a.destination);o.start(t0);o.stop(t0+dur)}
+let clipBuf=null,clipSrc=null,clipT0=0,clipLoading=null;
+function loadClip(){if(clipBuf)return Promise.resolve(clipBuf);if(clipLoading)return clipLoading;const a=ac();if(!a)return Promise.reject();
+  clipLoading=(typeof CLIP_B64==='string'&&CLIP_B64?Promise.resolve(Uint8Array.from(atob(CLIP_B64),c=>c.charCodeAt(0)).buffer):fetch('eat.mp3').then(r=>r.arrayBuffer()))
+  .then(ab=>new Promise((res,rej)=>a.decodeAudioData(ab,res,rej))).then(b=>{clipBuf=b;return b}).catch(e=>{clipLoading=null;throw e});return clipLoading}
+function stopClip(){if(clipSrc){try{clipSrc.onended=null;clipSrc.stop()}catch(e){}clipSrc=null}}
+function playClip(my){return new Promise(res=>{const a=ac();loadClip().then(b=>{if(my!==run)return res();stopClip();const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.onended=()=>{if(clipSrc===s)clipSrc=null;res()};clipT0=a.currentTime;s.start();clipSrc=s}).catch(()=>res())})}
+setInterval(()=>{const bar=document.querySelector('.prog2 i');if(bar&&clipBuf&&actx)bar.style.width=clipSrc?Math.min(100,(actx.currentTime-clipT0)/clipBuf.duration*100)+'%':'0'},250);
+async function playSong(my){const BEAT=.6;const spans=[...document.querySelectorAll('.ln span')];let k=0;
+  for(const line of SONG){tone(FREQ.C3,BEAT*4*.9,.12,'sine');for(const [w,n,b] of line){if(my!==run)return;spans.forEach(s=>s.classList.remove('sing'));const sp=spans[k++];if(sp)sp.classList.add('sing');tone(FREQ[n],b*BEAT);await wait(b*BEAT*1000)}}
+  spans.forEach(s=>s.classList.remove('sing'))}
+const $=id=>document.getElementById(id);
+let si=0,bi=0,run=0,playing=false,started=false,voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();voice=vs.find(v=>/zh[-_]HK/i.test(v.lang))||vs.find(v=>/yue/i.test(v.lang))||vs.find(v=>/zh[-_]TW/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function speak(text,my){return new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true;res()}};try{const u=new SpeechSynthesisUtterance(text.replace(/：/g,'，').replace(/聽/g,'廳'));u.lang=voice?voice.lang:'zh-HK';if(voice)u.voice=voice;u.rate=.85;u.onend=fin;u.onerror=fin;window._utts=window._utts||[];window._utts.push(u);if(window._utts.length>20)window._utts.shift();const go=()=>{try{speechSynthesis.resume()}catch(e){}speechSynthesis.speak(u)};const gap=Date.now()-(window._lastCancel||0);if(gap<350)setTimeout(go,350-gap);else go()}catch(e){}setTimeout(fin,Math.max(2500,text.length*420))})}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function dots(){$('dots').innerHTML=SC.map((_,i)=>`<i class="${i<si?'done':i===si?'now':''}"></i>`).join('')}
+function setRig(st){const k=$('kid');['arm','larm','spoon','eyes','mouth','face','think','say','help','steam','belly','bowl','turtle','ouch','crumbs','tears','chat','ttl','bad','pause'].forEach(a=>k.removeAttribute('data-'+a));k.classList.remove('fast','slow');
+  if(!st)return;for(const[a,v]of Object.entries(st)){if(a==='fast'||a==='slow'){k.classList.add(a);continue}k.setAttribute('data-'+a,v===1?'1':v)}
+  if(st.say)$('sayText').textContent=st.say}
+function showScene(){const s=SC[si];$('title').textContent=s.t;dots();const card=$('card'),kid=$('kid');
+  if(s.kind==='kid'){card.hidden=true;kid.style.visibility='visible';setRig(null)}
+  else{kid.style.visibility='hidden';card.hidden=false;card.innerHTML=s.kind==='audio'?`<div class="big">${ICON.star}</div><h1><span class="note">🎵</span> 慢慢食，飽就停</h1><div class="prog2"><i></i></div><button class="singbtn" id="rp" type="button">🔁 重播</button>`:s.kind==='song'?`<div class="songc"><h2>🎵 食飯唔舒服之歌 <small>（調寄《兩隻老虎》）</small></h2><div class="lyr">${SONG.map(l=>`<div class="ln">${l.map(x=>`<span>${x[0]}</span>`).join('')}</div>`).join('')}</div><button class="singbtn" id="sing" type="button">🎵 再唱一次</button></div>`:s.kind==='steps'?`<div class="steps">${STEPS.map((x,i)=>`<div class="step" id="st${i}"><b>${i+1}</b><span class="ic">${x[1]}</span><p>${x[0]}</p></div>`).join('')}</div>`:s.html}
+  if(s.kind==='audio'){$('rp').onclick=()=>{halt();ac();playClip(++run)}}
+  if(s.kind==='song'){$('sing').onclick=()=>{halt();ac();const my=++run;playSong(my)}}
+  $('prev').disabled=si===0;$('next').disabled=si===SC.length-1}
+function applyBeat(){const s=SC[si],b=s.beats[bi];$('sub').textContent=b.say;const tl=$('title');if(b.st&&b.st.ttl){tl.textContent=b.st.ttl;tl.classList.add('bad')}else{tl.textContent=s.t;tl.classList.remove('bad')}
+  if(s.kind==='kid')setRig(b.st);
+  if(s.kind==='steps'&&bi>0){for(let i=0;i<bi;i++){const e=$('st'+i);if(e)e.classList.add('in')}}}
+async function playFrom(){const my=++run;playing=true;$('play').textContent='⏸ 暫停';
+  while(si<SC.length){const s=SC[si];
+    while(bi<s.beats.length){if(my!==run)return;applyBeat();await speak(s.beats[bi].say,my);if(my!==run)return;await wait(350+((s.beats[bi].st&&s.beats[bi].st.pause)||0));if(my!==run)return;bi++}
+    if(s.kind==='song'){await playSong(my);if(my!==run)return}
+    if(s.kind==='audio'){await playClip(my);if(my!==run)return}
+    if(si===SC.length-1)break;await wait(150);if(my!==run)return;si++;bi=0;showScene()}
+  playing=false;$('play').textContent='🔁 由頭再睇';bi=SC[si].beats.length-1}
+function halt(){run++;playing=false;stopClip();try{if(speechSynthesis.speaking||speechSynthesis.pending){speechSynthesis.cancel();window._lastCancel=Date.now()}}catch(e){}}
+$('play').onclick=()=>{ac();if(playing){halt();$('play').textContent='▶ 繼續';return}
+  if(!started){started=true;si=0;bi=0;showScene()}
+  else if(si===SC.length-1&&bi>=SC[si].beats.length-1&&$('play').textContent.includes('由頭')){si=0;bi=0;showScene()}
+  playFrom()};
+$('next').onclick=()=>{if(si<SC.length-1){halt();started=true;si++;bi=0;showScene();playFrom()}};
+$('prev').onclick=()=>{if(si>0){halt();started=true;si--;bi=0;showScene();playFrom()}};
+showScene();setRig({arm:'eat',spoon:'hand'});$('sub').textContent='撳「▶ 開始」睇動畫';
+</script>
+
+</body>
+</html>
