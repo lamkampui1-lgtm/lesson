@@ -1,0 +1,833 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>電力安全官</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@500;700;900&display=swap">
+<style>
+/* Layout: one full-screen "screen" at a time; whiteboard host adds a student column on the right. Single high-contrast dark theme for low vision. */
+:root{
+  --bg:#0A1430; --panel:#15214A; --panel2:#22336B; --fg:#FFFFFF; --muted:#C3CDEE;
+  --yellow:#FFD60A; --ink:#0A1430; --green:#3DDC84; --red:#FF5A4E; --orange:#FF9F1C; --blue:#5AC8FA;
+  --display:'Noto Sans HK','PingFang HK','Microsoft JhengHei',sans-serif;
+  --body:'Noto Sans HK','PingFang HK','Microsoft JhengHei',sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{touch-action:manipulation;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:20px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+#app{min-height:100%;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+.btn{border:0;border-radius:20px;background:var(--panel2);color:var(--fg);min-height:64px;padding:10px 22px;font-size:1.3rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation}
+.btn:focus-visible,.opt:focus-visible,.tile:focus-visible,.key:focus-visible{outline:5px solid var(--yellow);outline-offset:3px}
+.btn.y{background:var(--yellow);color:var(--ink)}
+.btn.g{background:var(--green);color:var(--ink)}
+.btn.sm{min-height:52px;font-size:1.1rem;padding:8px 16px}
+.btn:disabled{opacity:.35;cursor:default}
+.btn svg{width:30px;height:30px}
+.top{display:flex;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+.top h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(1.4rem,3vw,2rem);flex:1;min-width:0;text-wrap:balance}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{padding:6px 12px;border-radius:999px;background:var(--panel);color:var(--muted);font-weight:700;font-size:1rem}
+.dot.on{background:var(--yellow);color:var(--ink)}
+.dot.done{background:var(--panel2);color:var(--fg)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--panel);font-weight:700;font-size:1.05rem;letter-spacing:.04em}
+.led{width:14px;height:14px;border-radius:50%;background:var(--red)}
+.led.on{background:var(--green)}
+.wrap{flex:1;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-bottom:16px}
+.is-host .wrap{grid-template-columns:minmax(0,1fr) 290px}
+@media (max-width:900px){.is-host .wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{display:flex;flex-direction:column;gap:16px;min-width:0}
+.art{background:var(--panel);border-radius:28px;padding:10px;display:flex;justify-content:center}
+.art svg{width:100%;height:auto;max-height:44vh}
+.say{font-family:var(--display);font-weight:900;font-size:clamp(1.8rem,4.4vw,3.3rem);line-height:1.25;text-align:center;text-wrap:balance;margin:0}
+.sub{color:var(--muted);text-align:center;font-size:clamp(1.1rem,2.2vw,1.5rem);margin:0;font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.opt{border:7px solid transparent;background:var(--panel2);border-radius:28px;min-height:clamp(170px,27vh,280px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:var(--display);font-weight:900;font-size:clamp(1.7rem,3.8vw,2.8rem);padding:12px;touch-action:manipulation;transition:transform .15s}
+.opt:active{transform:scale(.97)}
+.opt svg{width:clamp(84px,12vw,140px);height:auto}
+.opt.hint{border-color:var(--yellow);animation:pulse 1s ease-in-out infinite}
+.opt.dim{opacity:.3}
+.opt.one{min-height:clamp(200px,30vh,340px);flex-direction:row;gap:28px;font-size:clamp(2.4rem,5.4vw,3.8rem)}
+.opt.one svg{width:clamp(110px,15vw,180px)}
+.artbtn{border:0;padding:0;margin:0;background:none;cursor:pointer;width:100%;display:block;border-radius:28px}
+.artbtn:focus-visible{outline:5px solid var(--yellow);outline-offset:3px}
+.corner{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5;width:min(44vw,440px);min-height:clamp(150px,24vh,250px);border-radius:32px;border:7px solid transparent;background:var(--yellow);color:var(--ink);font-family:var(--display);font-weight:900;font-size:clamp(2rem,4.6vw,3.4rem);display:flex;align-items:center;justify-content:center;gap:18px;padding:12px 20px;cursor:pointer;touch-action:manipulation;box-shadow:0 10px 30px rgba(0,0,0,.55);transition:transform .15s}
+.corner:active,.corner.pressed{transform:scale(.94);filter:brightness(1.25)}
+.corner:focus-visible{outline:5px solid var(--fg);outline-offset:4px}
+.corner svg{width:clamp(72px,10vw,130px);height:auto;flex:none}
+.corner.ans{background:var(--panel2);color:var(--fg)}
+.corner.hint{border-color:var(--yellow);animation:pulse 1s ease-in-out infinite}
+.corner.right{border-color:var(--green);background:#14523A}
+.stage{padding-bottom:clamp(180px,28vh,290px)}
+.is-host aside{margin-bottom:clamp(180px,28vh,290px)}
+.tapbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tapbar span{width:clamp(20px,3.2vw,36px);height:clamp(20px,3.2vw,36px);border-radius:50%;background:var(--panel2);border:3px solid var(--muted)}
+.tapbar span.on{background:var(--yellow);border-color:var(--yellow)}
+.ripple{position:fixed;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:9px solid var(--yellow);pointer-events:none;z-index:9;animation:rip .6s ease-out forwards}
+@keyframes rip{from{transform:scale(.2);opacity:1}to{transform:scale(1.4);opacity:0}}
+/* ---------- teaching-slide layout (board) ---------- */
+body.is-deck #app{height:100%;min-height:0}
+.dtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-block:10px}
+.part{padding:8px 18px;border-radius:999px;font-weight:900;font-size:clamp(1.1rem,1.8vw,1.5rem);background:var(--panel2);color:var(--fg)}
+.part.p0{background:var(--red);color:#fff}.part.p1{background:var(--blue);color:var(--ink)}.part.p2{background:var(--orange);color:var(--ink)}
+.pgno{font-weight:900;font-size:1.2rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.prog{display:flex;gap:5px;flex:1;min-width:120px;flex-wrap:wrap}
+.prog span{width:14px;height:14px;border-radius:50%;background:var(--panel2)}
+.prog span.past{background:var(--muted)}.prog span.on{background:var(--yellow);transform:scale(1.3)}
+.rc{color:var(--yellow);font-size:1.6rem;letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.slide{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(16px,2.4vw,36px);align-items:center}
+.artcard{border:0;padding:10px;border-radius:30px;background:var(--panel);cursor:pointer;width:100%;display:block;transition:transform .15s}
+.artcard svg{width:100%;height:auto;max-height:64vh;display:block}
+.artcard:focus-visible{outline:5px solid var(--yellow);outline-offset:4px}
+.artcard.pressed{transform:scale(.97)}
+.bump{animation:pulse .5s ease-in-out}
+.col{display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px);min-width:0}
+.stitle{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,4.6vw,5rem);line-height:1.1;text-wrap:balance}
+.ln{margin:0;font-weight:700;font-size:clamp(1.4rem,2.5vw,2.6rem);line-height:1.3;color:var(--fg)}
+.steps2{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps2 li{display:flex;align-items:center;gap:14px;background:var(--panel);border-radius:20px;padding:8px 14px;border:5px solid transparent;transition:transform .2s}
+.steps2 li.on{border-color:var(--yellow);transform:translateX(8px)}
+.steps2 .n{flex:none;width:clamp(40px,4vw,56px);height:clamp(40px,4vw,56px);border-radius:50%;background:#F08A3C;color:#fff;display:grid;place-items:center;font-weight:900;font-size:clamp(1.3rem,2.2vw,1.9rem)}
+.steps2 svg{flex:none;width:clamp(48px,5.5vw,76px);height:auto}
+.steps2 b{font-size:clamp(1.4rem,2.6vw,2.6rem);font-weight:900}
+.keypill{align-self:flex-start;background:#FFD84D;color:var(--ink);font-weight:900;font-size:clamp(1.6rem,3vw,3rem);padding:10px 26px;border-radius:999px}
+.okpill{align-self:flex-start;background:var(--green);color:var(--ink);font-weight:900;font-size:clamp(1.2rem,2vw,1.8rem);padding:8px 20px;border-radius:999px}
+.dochip{align-self:flex-start;border:3px solid var(--blue);color:var(--blue);font-weight:900;font-size:clamp(1rem,1.6vw,1.4rem);padding:6px 16px;border-radius:999px}
+.dochip.soft{border-color:var(--muted);color:var(--muted)}
+.slide.navy .col{background:var(--panel2);border-radius:30px;padding:clamp(16px,2.4vw,32px)}
+.notes{background:#F4F1E4;color:#1B2140;border-radius:18px;padding:14px 18px;font-size:clamp(1rem,1.4vw,1.25rem);line-height:1.5;font-weight:500}
+.notes b{display:block;font-size:.9em;color:#8A5A00;margin-bottom:4px}
+.dbot{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-block:12px;flex-wrap:wrap}
+.roster{display:flex;flex-wrap:wrap;gap:8px;flex:1;min-width:0}
+.chip2{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border-radius:999px;padding:6px 8px 6px 16px;font-size:1.2rem}
+.nav2{display:flex;gap:12px;margin-left:auto}
+.navp{min-height:72px;font-size:1.3rem}
+.navn{min-height:96px;min-width:min(300px,60vw);font-size:clamp(1.6rem,2.6vw,2.2rem);border-radius:26px}
+.tbl table{font-size:clamp(1rem,1.6vw,1.4rem)}
+td.yes{color:var(--green);font-weight:900}
+.sstage{display:flex;flex-direction:column;gap:14px;padding-bottom:clamp(180px,28vh,290px)}
+.sstage .art{cursor:pointer}
+@media (max-width:820px){.slide{grid-template-columns:minmax(0,1fr)}.artcard svg{max-height:46vh}}
+.slide.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:clamp(10px,2vh,22px)}
+.slide.cover .keypill{align-self:center}
+.slide.cover .notes{max-width:900px;text-align:left}
+.emblem{border:0;background:none;padding:0;cursor:pointer;width:clamp(140px,18vw,240px);transition:transform .15s}
+.emblem svg{width:100%;height:auto;display:block}
+.emblem.pressed{transform:scale(.94)}
+.emblem:focus-visible{outline:5px solid var(--yellow);outline-offset:6px;border-radius:50%}
+.slide.cover .stitle{font-size:clamp(3rem,7vw,7rem)}
+.sstage .art.emb svg{max-height:34vh}
+body.is-student #app{height:100%;min-height:0}
+.sgrid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:clamp(12px,2vw,24px);padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+.sgrid .sstage{padding-bottom:0;justify-content:center;min-width:0}
+.sgrid .art svg{max-height:56vh}
+.bigpress{border:9px solid var(--yellow);border-radius:40px;background:var(--panel2);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,22px);padding:16px;cursor:pointer;touch-action:manipulation;font-family:var(--display);font-weight:900;font-size:clamp(2rem,5vw,4rem);line-height:1.15;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:pulse 1.2s ease-in-out infinite;transition:transform .12s;min-height:0}
+.bigpress svg{width:clamp(100px,16vw,200px);height:auto;flex:none}
+.bigpress:active,.bigpress.pressed{transform:scale(.95);filter:brightness(1.25)}
+.bigpress.right{border-color:var(--green);background:#14523A;animation:none}
+.bigpress:focus-visible{outline:5px solid var(--fg);outline-offset:4px}
+@media (max-width:700px){.sgrid{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(220px,1fr)}.sgrid .art svg{max-height:34vh}}
+.bigpress small{display:block;font-size:.55em;color:var(--yellow);margin-top:6px}
+.cnt{color:var(--yellow);font-size:clamp(1.3rem,2.6vw,2rem)}
+.opt.right{border-color:var(--green);background:#14523A}
+.qdots{display:flex;justify-content:center;gap:12px}
+.qdot{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:3px solid var(--muted)}
+.qdot.on{background:var(--yellow);border-color:var(--yellow)}
+.qdot.ok{background:var(--green);border-color:var(--green)}
+.nav{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.nav .btn{min-height:84px;font-size:1.6rem;flex:1;min-width:150px}
+.banner{background:var(--panel);border-radius:22px;padding:16px;text-align:center;font-size:1.5rem;font-weight:900}
+.banner.ok{background:#14523A}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.step{background:var(--panel2);border-radius:26px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;border:7px solid transparent;transition:transform .25s,border-color .25s}
+.step svg{width:clamp(90px,12vw,140px);height:auto}
+.step b{font-family:var(--display);font-weight:900;font-size:clamp(1.6rem,3.2vw,2.4rem);text-align:center}
+.num{width:56px;height:56px;border-radius:50%;background:var(--yellow);color:var(--ink);display:grid;place-items:center;font-weight:900;font-size:1.8rem;font-variant-numeric:tabular-nums}
+.step.on{border-color:var(--yellow);transform:scale(1.04)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.tile{position:relative;border:0;background:var(--panel);border-radius:30px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;min-height:220px;justify-content:center}
+.tile .ic{width:120px;height:120px;border-radius:50%;display:grid;place-items:center}
+.tile .ic svg{width:90px;height:90px}
+.tile b{font-family:var(--display);font-weight:900;font-size:clamp(1.6rem,3vw,2.2rem)}
+.tick{position:absolute;top:14px;right:14px;width:48px;height:48px;border-radius:50%;background:var(--green);color:var(--ink);display:grid;place-items:center;font-weight:900;font-size:1.6rem}
+.hero{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,6vw,4rem);margin:0;text-align:center;line-height:1.15;text-wrap:balance}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-block:24px}
+.big{width:min(600px,100%);min-height:110px;font-size:clamp(1.6rem,3.6vw,2.2rem);border-radius:28px;flex-direction:column;gap:2px}
+.big small{font-size:1rem;font-weight:500;opacity:.85}
+.msg{max-width:620px;background:#4A1C1C;border-radius:18px;padding:14px 18px;font-size:1.2rem;font-weight:700;text-align:center}
+.code{display:flex;gap:12px;justify-content:center}
+.code span{width:clamp(64px,13vw,96px);height:clamp(84px,16vw,120px);border-radius:20px;background:var(--panel);display:grid;place-items:center;font-size:clamp(2.6rem,7vw,4rem);font-weight:900;font-variant-numeric:tabular-nums;border:5px solid var(--panel2)}
+.code span.cur{border-color:var(--yellow)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(420px,100%)}
+.key{border:0;border-radius:22px;background:var(--panel2);min-height:clamp(76px,11vh,100px);font-size:2.6rem;font-weight:900;cursor:pointer;touch-action:manipulation;font-variant-numeric:tabular-nums}
+.key.y{background:var(--yellow);color:var(--ink)}
+input.name{width:min(520px,100%);font:inherit;font-size:2.2rem;font-weight:900;text-align:center;padding:16px;border-radius:22px;border:5px solid var(--yellow);background:var(--panel);color:var(--fg);user-select:text;-webkit-user-select:text}
+aside{background:var(--panel);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:12px;align-self:start;min-width:0}
+aside h2{margin:0;font-size:1.3rem;font-weight:900;display:flex;justify-content:space-between;align-items:center}
+.roomcode{font-size:3rem;font-weight:900;letter-spacing:.12em;color:var(--yellow);text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+.chips{display:grid;gap:10px}
+.chip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-radius:16px;background:var(--panel2);font-size:1.35rem;font-weight:900}
+.chip span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{font-size:1rem;padding:5px 10px;border-radius:999px;background:var(--bg);color:var(--muted);white-space:nowrap;font-weight:700}
+.st.ok{background:var(--green);color:var(--ink)}
+.st.retry{background:var(--orange);color:var(--ink)}
+.st.go{background:var(--blue);color:var(--ink)}
+.empty{color:var(--muted);font-size:1.1rem;text-align:center;padding:10px}
+.reward{display:flex;flex-direction:column;align-items:center;gap:14px;padding-block:10px}
+.reward svg{width:min(320px,70vw);height:auto}
+.tbl{overflow-x:auto;background:var(--panel);border-radius:22px;padding:10px}
+table{border-collapse:collapse;width:100%;font-size:1.3rem;font-weight:700}
+th,td{padding:12px 10px;text-align:center;border-bottom:2px solid var(--panel2)}
+th:first-child,td:first-child{text-align:left}
+.yes{color:var(--green);font-size:1.7rem}
+.no{color:var(--panel2);font-size:1.7rem}
+.follow{background:var(--blue);color:var(--ink);padding:8px 14px;border-radius:999px;font-weight:900;font-size:1.05rem}
+/* motion */
+@keyframes pulse{50%{transform:scale(1.04)}}
+@keyframes blink{50%{opacity:.15}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flick{50%{transform:scaleY(.85)}}
+@keyframes drift{50%{transform:translateY(-8px)}}
+@keyframes ring{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.4)}}
+@keyframes pop{0%{transform:scale(.2) rotate(-20deg);opacity:0}70%{transform:scale(1.12) rotate(4deg);opacity:1}100%{transform:scale(1)}}
+@keyframes flow{to{stroke-dashoffset:-40}}
+.blink{animation:blink .7s steps(2) infinite}
+.spin{animation:spin .8s linear infinite;transform-box:fill-box;transform-origin:center}
+.flick{animation:flick .35s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom}
+.drift{animation:drift 2s ease-in-out infinite}
+.ring{animation:ring 1.2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.flow{stroke-dasharray:14 6;animation:flow .5s linear infinite}
+.pop{animation:pop .8s cubic-bezier(.3,1.4,.5,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app"></div>
+<svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>
+<filter id="soft" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity=".4"/></filter>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A50A8"/><stop offset="1" stop-color="#24357A"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C2A62"/><stop offset="1" stop-color="#121C48"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#CC8A58"/><stop offset="1" stop-color="#BC7A4A"/></linearGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEF1F8"/><stop offset="1" stop-color="#D2D8EA"/></linearGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BE6FF"/><stop offset="1" stop-color="#3BA2E6"/></linearGradient>
+<linearGradient id="screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6A8AD8"/><stop offset="1" stop-color="#5677C8"/></linearGradient>
+<linearGradient id="fireG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FF5A2B"/><stop offset="1" stop-color="#FFC22E"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#FFD60A" stop-opacity=".55"/><stop offset="1" stop-color="#FFD60A" stop-opacity="0"/></radialGradient>
+<linearGradient id="hall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7178CC"/><stop offset="1" stop-color="#6067BC"/></linearGradient>
+<linearGradient id="kitch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46A0AE"/><stop offset="1" stop-color="#3A8E9E"/></linearGradient>
+<linearGradient id="bedr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8C6CC6"/><stop offset="1" stop-color="#7C5DB8"/></linearGradient>
+<linearGradient id="bath" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A9ACA"/><stop offset="1" stop-color="#3F8CBC"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD0FF"/><stop offset="1" stop-color="#CDEBFF"/></linearGradient>
+<linearGradient id="rug" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FF8FA3"/><stop offset="1" stop-color="#FFB86B"/></linearGradient>
+<pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="13" cy="13" r="2.6" fill="#fff" opacity=".12"/></pattern>
+<pattern id="tiles" width="30" height="30" patternUnits="userSpaceOnUse"><rect x="1" y="1" width="28" height="28" rx="5" fill="#fff" opacity=".07"/></pattern>
+<pattern id="planks" width="90" height="16" patternUnits="userSpaceOnUse"><path d="M0 15 H90 M45 0 V16" stroke="#000" stroke-opacity=".22" stroke-width="2"/></pattern>
+<radialGradient id="spot" cx=".45" cy=".25" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="vig" cx=".5" cy=".42" r=".72"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></radialGradient>
+<filter id="cut" x="-12%" y="-12%" width="124%" height="134%" color-interpolation-filters="sRGB">
+<feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="t"/>
+<feDisplacementMap in="SourceGraphic" in2="t" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+<feFlood flood-color="#120C2E" flood-opacity=".5"/><feComposite in2="d" operator="in"/><feGaussianBlur stdDeviation="1.5"/><feOffset dx="1.5" dy="3.5" result="s"/>
+<feMerge><feMergeNode in="s"/><feMergeNode in="d"/></feMerge></filter>
+<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="2"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .5 0 0 0 -.18"/></filter>
+<clipPath id="card"><rect width="400" height="260" rx="22"/></clipPath>
+</defs></svg>
+
+<script>
+(function(){
+"use strict";
+/* ---------- palette for drawings (matches CSS tokens) ---------- */
+const C={bg:'#0A1430',pn:'#15214A',p2:'#22336B',w:'#FFFFFF',m:'#C3CDEE',y:'#FFD60A',g:'#3DDC84',r:'#FF5A4E',b:'#5AC8FA',o:'#FF9F1C',skin:'#F6C9A0',brown:'#9A6440',grey:'#8A94B8',dk:'#050A1C',pink:'#FF7AB6'};
+const svg=(inner,vb)=>`<svg viewBox="${vb||'0 0 400 260'}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${vb?inner:`<g clip-path="url(#card)">${inner}<rect width="400" height="260" filter="url(#grain)"/><rect width="400" height="260" fill="url(#vig)" opacity=".7"/></g>`}</svg>`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- drawing kit: rounded cartoon style ---------- */
+const OL='#0B1430';
+const gl=(x,y,rx,ry,r)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".2"${r?` transform="rotate(${r} ${x} ${y})"`:''}/>`;
+/* draw compound shapes with one clean outline: thick dark copy underneath, fill on top */
+const ol=(sh)=>`<g filter="url(#cut)">${sh}</g>`;
+const shade=(x,y,rx)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${rx*.18}" fill="#000" opacity=".28"/>`;
+function face(cx,cy,r,mood){
+  const e=r*.3,ey=cy-r*.05;
+  let m=mood==='flat'?`<line x1="${cx-r*.25}" y1="${cy+r*.4}" x2="${cx+r*.25}" y2="${cy+r*.4}" stroke="${OL}" stroke-width="${r*.12}" stroke-linecap="round"/>`
+    :`<path d="M${cx-r*.3} ${cy+r*.28} q${r*.3} ${r*.32} ${r*.6} 0" fill="none" stroke="${OL}" stroke-width="${r*.12}" stroke-linecap="round"/>`;
+  return `<circle cx="${cx-e}" cy="${ey}" r="${r*.13}" fill="${OL}"/><circle cx="${cx+e}" cy="${ey}" r="${r*.13}" fill="${OL}"/><circle cx="${cx-e+r*.05}" cy="${ey-r*.05}" r="${r*.05}" fill="#fff"/><circle cx="${cx+e+r*.05}" cy="${ey-r*.05}" r="${r*.05}" fill="#fff"/>`
+   +(mood==='flat'?'':`<ellipse cx="${cx-r*.55}" cy="${cy+r*.22}" rx="${r*.18}" ry="${r*.11}" fill="#FF8FA3" opacity=".75"/><ellipse cx="${cx+r*.55}" cy="${cy+r*.22}" rx="${r*.18}" ry="${r*.11}" fill="#FF8FA3" opacity=".75"/>`)+m;
+}
+/* cute child figure: head centre at (x,y), feet about 74*s below */
+function fig(x,y,s,col){s=s||1;col=col||C.b;
+  return `<g transform="translate(${x} ${y}) scale(${s})">`
+   +ol(`<rect x="-12" y="40" width="10" height="28" rx="5" fill="#3B4A7A"/><rect x="2" y="40" width="10" height="28" rx="5" fill="#3B4A7A"/><ellipse cx="-8" cy="70" rx="9" ry="5" fill="#2A3560"/><ellipse cx="8" cy="70" rx="9" ry="5" fill="#2A3560"/>`,6)
+   +`<g filter="url(#cut)"><path d="M-15 24 q-12 8 -12 20 M15 24 q12 8 12 20" fill="none" stroke="${C.skin}" stroke-width="8" stroke-linecap="round"/></g>`
+   +ol(`<rect x="-18" y="13" width="36" height="34" rx="15" fill="${col}"/>`,6)
+   +ol(`<circle cx="0" cy="0" r="18" fill="${C.skin}"/>`,6)
+   +`<path d="M-18 -2 a18 18 0 0 1 36 0 q-9 -7 -18 -5 q-9 -2 -18 5z" fill="#4A2E1E"/>${face(0,2,15)}</g>`;}
+function hand(x,y){return `<g transform="translate(${x} ${y})">`+ol(`<rect x="0" y="22" width="46" height="42" rx="18" fill="${C.skin}"/><rect x="0" y="0" width="11" height="36" rx="5.5" fill="${C.skin}"/><rect x="12" y="-6" width="11" height="42" rx="5.5" fill="${C.skin}"/><rect x="24" y="-4" width="11" height="40" rx="5.5" fill="${C.skin}"/><rect x="36" y="4" width="10" height="32" rx="5" fill="${C.skin}"/><rect x="-14" y="30" width="24" height="11" rx="5.5" fill="${C.skin}" transform="rotate(-35 0 35)"/>`,7)+`</g>`}
+const slash=`<g fill="none" stroke-linecap="round"><circle cx="60" cy="60" r="50" stroke="${OL}" stroke-width="16"/><line x1="26" y1="94" x2="94" y2="26" stroke="${OL}" stroke-width="16"/><circle cx="60" cy="60" r="50" stroke="${C.r}" stroke-width="9"/><line x1="26" y1="94" x2="94" y2="26" stroke="${C.r}" stroke-width="9"/></g>`;
+const flame=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s||1})">`+ol(`<path d="M0 0 C-24 -4 -22 -34 -4 -58 C0 -40 22 -34 20 -12 C18 -2 10 2 0 0Z" fill="url(#fireG)"/>`,7)+`<path d="M1 -6 C-10 -10 -8 -26 0 -34 C3 -24 12 -20 9 -10 C8 -6 5 -5 1 -6Z" fill="#FFF3A6"/></g>`;
+const cloud=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s||1})">`+ol(`<circle cx="-22" cy="6" r="18" fill="#9EA6C2"/><circle cx="0" cy="-6" r="24" fill="#9EA6C2"/><circle cx="24" cy="6" r="18" fill="#9EA6C2"/><rect x="-36" y="4" width="72" height="20" rx="10" fill="#9EA6C2"/>`,7)+gl(-6,-14,9,5,-20)+`</g>`;
+const badgeOK=(x,y,r)=>ol(`<circle cx="${x}" cy="${y}" r="${r}" fill="${C.g}"/>`,6)+`<path d="M${x-r*.45} ${y} l${r*.32} ${r*.32} l${r*.6} -${r*.62}" fill="none" stroke="${OL}" stroke-width="${r*.32}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const doorIcon=(lock)=>ol(`<rect x="28" y="10" width="64" height="102" rx="14" fill="url(#wood)"/>`)+`<rect x="38" y="20" width="44" height="36" rx="8" fill="#000" opacity=".12"/><rect x="38" y="62" width="44" height="40" rx="8" fill="#000" opacity=".12"/><circle cx="80" cy="62" r="5" fill="${C.y}" stroke="${OL}" stroke-width="3"/>${gl(40,20,6,12,-10)}`
+  +(lock?`<path d="M50 70 v-10 a10 10 0 0 1 20 0 v10" fill="none" stroke="${OL}" stroke-width="12"/><path d="M50 70 v-10 a10 10 0 0 1 20 0 v10" fill="none" stroke="${C.y}" stroke-width="6"/>`+ol(`<rect x="42" y="68" width="36" height="30" rx="10" fill="${C.y}"/>`,6)+`<circle cx="60" cy="82" r="4" fill="${OL}"/>`:'');
+const tapShape=(handleRot)=>ol(`<rect x="4" y="30" width="32" height="24" rx="10" fill="url(#metal)"/><path d="M30 34 H78 a18 18 0 0 1 18 18 V64 a6 6 0 0 1 -6 6 H86 a6 6 0 0 1 -6 -6 V54 H30Z" fill="url(#metal)"/><rect x="50" y="16" width="14" height="20" rx="4" fill="url(#metal)"/>`)
+  +`<g transform="rotate(${handleRot||0} 57 14)">`+ol(`<rect x="36" y="6" width="42" height="14" rx="7" fill="${C.r}"/>`,6)+`</g>`+gl(56,40,14,4);
+
+const room=(floorY,w,pat)=>`<rect width="400" height="260" fill="url(#${w||'wall'})"/><rect width="400" height="${floorY}" fill="url(#${pat||'dots'})"/><rect width="400" height="260" fill="url(#spot)"/><rect x="0" y="${floorY}" width="400" height="${260-floorY}" fill="#8A5A3E"/><rect x="0" y="${floorY}" width="400" height="${260-floorY}" fill="url(#planks)"/><rect x="0" y="${floorY}" width="400" height="${260-floorY}" fill="url(#floor)" opacity=".45"/><rect x="0" y="${floorY-7}" width="400" height="9" fill="#fff" opacity=".28"/>`;
+const plant=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s||1})">`+ol(`<path d="M0 0 q-22 -18 -14 -44 q14 12 14 44z" fill="#3DBE6E"/><path d="M0 0 q22 -22 12 -48 q-14 14 -12 48z" fill="#49D27C"/><path d="M0 0 q-4 -30 2 -56 q8 26 -2 56z" fill="#2FA85E"/><path d="M-14 0 h28 l-4 24 a4 4 0 0 1 -4 4 h-12 a4 4 0 0 1 -4 -4z" fill="#E8875A"/>`,6)+gl(-6,8,3,7)+`</g>`;
+/* ---------- shared pieces ---------- */
+const clamp01=v=>Math.max(0,Math.min(1,v));
+const dome=(x,y,r,down)=>`<path d="M${x-r} ${y} a${r} ${r} 0 0 ${down?0:1} ${2*r} 0z" fill="${C.y}" stroke="${OL}" stroke-width="3"/>${down?'':`<circle cx="${x-r*.3}" cy="${y-r*.45}" r="${r*.22}" fill="#fff" opacity=".7"/>`}`;
+const arrowR=(x1,y,x2,col)=>`<path d="M${x1} ${y} H${x2} M${x2-18} ${y-16} L${x2} ${y} L${x2-18} ${y+16}" fill="none" stroke="${OL}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path d="M${x1} ${y} H${x2} M${x2-18} ${y-16} L${x2} ${y} L${x2-18} ${y+16}" fill="none" stroke="${col||C.y}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+/* Hong Kong switched wall socket (BS 1363): socket on the left, rocker switch on the right; red shows when ON */
+function socketPlate(x,y,on){
+  return ol(`<rect x="${x}" y="${y}" width="176" height="116" rx="18" fill="#F7F8FC"/>`)
+   +`<rect x="${x+8}" y="${y+8}" width="160" height="100" rx="12" fill="none" stroke="#D2D8EA" stroke-width="3"/>`
+   +`<rect x="${x+56}" y="${y+22}" width="12" height="26" rx="3" fill="${OL}"/><rect x="${x+26}" y="${y+66}" width="26" height="12" rx="3" fill="${OL}"/><rect x="${x+72}" y="${y+66}" width="26" height="12" rx="3" fill="${OL}"/>`
+   +ol(`<rect x="${x+124}" y="${y+26}" width="34" height="64" rx="8" fill="#E4E8F4"/>`)
+   +(on?`<rect x="${x+128}" y="${y+30}" width="26" height="22" rx="4" fill="${C.r}"/><rect x="${x+128}" y="${y+56}" width="26" height="30" rx="4" fill="#C9CFE2"/>`
+       :`<rect x="${x+128}" y="${y+30}" width="26" height="30" rx="4" fill="#C9CFE2"/><rect x="${x+128}" y="${y+64}" width="26" height="22" rx="4" fill="#F7F8FC"/>`)
+   +`<text x="${x+141}" y="${y+108}" font-size="17" font-weight="900" text-anchor="middle" fill="${on?C.r:'#7C86A8'}">${on?'開':'關'}</text>`;
+}
+/* 3-pin plug seen from the front, centred on (cx,cy) */
+const bigPlug=(cx,cy)=>ol(`<rect x="${cx-30}" y="${cy-34}" width="60" height="70" rx="14" fill="#fff"/><rect x="${cx-10}" y="${cy+30}" width="20" height="18" rx="6" fill="#fff"/>`)+`<rect x="${cx-20}" y="${cy-24}" width="40" height="8" rx="4" fill="#D2D8EA"/>`+gl(cx-14,cy-8,5,14);
+function grip(cx,cy){return `<g transform="translate(${cx-42} ${cy-6})">`+ol(`<rect x="0" y="0" width="22" height="64" rx="11" fill="${C.skin}"/><rect x="62" y="0" width="22" height="64" rx="11" fill="${C.skin}"/><rect x="6" y="40" width="72" height="40" rx="18" fill="${C.skin}"/>`)+`</g>`}
+
+/* the plug's metal end seen head-on: A = flat rectangle with a tongue on one side, C = flat oval */
+function usbEnd(type,cx,cy,s,sticker){
+  s=s||1;const w=110*s;
+  if(type==='A'){const h=46*s;
+    return ol(`<rect x="${cx-w/2}" y="${cy-h/2}" width="${w}" height="${h}" rx="${5*s}" fill="url(#metal)"/>`)
+     +`<rect x="${cx-w/2+7*s}" y="${cy-h/2+7*s}" width="${w-14*s}" height="${h-14*s}" rx="${3*s}" fill="${OL}"/><rect x="${cx-w/2+7*s}" y="${cy-h/2+7*s}" width="${w-14*s}" height="${(h-14*s)/2}" rx="${3*s}" fill="#4A63B8"/>`
+     +(sticker?dome(cx,cy-h/2-3*s,9*s):'');}
+  const h=34*s;
+  return ol(`<rect x="${cx-w/2}" y="${cy-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="url(#metal)"/>`)
+   +`<rect x="${cx-w/2+8*s}" y="${cy-h/2+7*s}" width="${w-16*s}" height="${h-14*s}" rx="${(h-14*s)/2}" fill="${OL}"/><rect x="${cx-w/2+22*s}" y="${cy-3*s}" width="${w-44*s}" height="${6*s}" rx="${3*s}" fill="#4A63B8"/>`;
+}
+/* a USB plug lying sideways, tip at (tx,cy), cable leaving to the right */
+function usbSide(type,tx,cy,stickerUp,s){
+  s=s||1;const A=type==='A',ml=(A?44:30)*s,mh=(A?26:18)*s,bl=84*s,bh=(A?40:32)*s,body=A?'#4A63B8':'#2FA85E';
+  return ol(`<rect x="${tx}" y="${cy-mh/2}" width="${ml+8*s}" height="${mh}" rx="${A?3*s:mh/2}" fill="url(#metal)"/><rect x="${tx+ml}" y="${cy-bh/2}" width="${bl}" height="${bh}" rx="${12*s}" fill="${body}"/><rect x="${tx+ml+bl-4*s}" y="${cy-7*s}" width="${22*s}" height="${14*s}" rx="${7*s}" fill="${body}"/>`)
+   +gl(tx+ml+30*s,cy-bh/2+8*s,18*s,4*s)
+   +`<text x="${tx+ml+bl/2}" y="${cy+9*s}" font-size="${24*s}" font-weight="900" text-anchor="middle" fill="#fff">${type}</text>`
+   +(A&&stickerUp!=null?dome(tx+ml+bl/2,stickerUp?cy-bh/2:cy+bh/2,9*s,!stickerUp):'');
+}
+const battery=(x,y,full)=>ol(`<rect x="${x}" y="${y}" width="56" height="28" rx="7" fill="#fff"/><rect x="${x+56}" y="${y+8}" width="6" height="12" rx="2" fill="#fff"/>`)+`<rect x="${x+5}" y="${y+5}" width="${full?46:12}" height="18" rx="4" fill="${full?C.g:C.r}"/>`+(full?`<path d="M${x+30} ${y+3} l-8 12 h7 l-4 10 l10 -13 h-7z" fill="${OL}"/>`:'');
+const lamp=(lit,sw,hi)=>(lit?`<circle cx="70" cy="110" r="92" fill="url(#glow)"/>`:'')
+  +ol(`<rect x="14" y="170" width="112" height="16" rx="8" fill="url(#wood)"/><rect x="24" y="184" width="12" height="44" rx="4" fill="url(#wood)"/><rect x="104" y="184" width="12" height="44" rx="4" fill="url(#wood)"/><rect x="50" y="160" width="40" height="12" rx="6" fill="#DDE3F5"/><rect x="66" y="128" width="8" height="34" fill="#DDE3F5"/>`)
+  +(lit?`<circle cx="70" cy="126" r="14" fill="#FFF3A6"/>`:'')
+  +ol(`<path d="M42 92 h56 l14 40 h-84z" fill="${lit?C.y:'#8E96B8'}"/>`)+gl(56,104,6,12,20)
+  +(sw==null?'':(hi?`<circle class="blink" cx="70" cy="166" r="20" fill="none" stroke="${C.y}" stroke-width="5"/>`:'')
+    +ol(`<rect x="52" y="156" width="36" height="20" rx="8" fill="#fff"/>`)+`<circle cx="70" cy="166" r="7" fill="${sw?C.g:'#7C86A8'}" stroke="${OL}" stroke-width="2.5"/>`
+    +`<text x="70" y="150" font-size="15" font-weight="900" text-anchor="middle" fill="#fff" stroke="${OL}" stroke-width="4" paint-order="stroke">燈掣</text>`);
+
+/* ---------- small icons (120x120) ---------- */
+const sockIc=on=>svg(`<g transform="translate(-28 2) scale(1)">${socketPlate(30,0,on)}</g>`,'0 0 120 120');
+const IC={
+  fanSw:svg(ol(`<rect x="54" y="78" width="12" height="30" rx="5" fill="#DDE3F5"/><circle cx="60" cy="52" r="42" fill="#2E4386"/>`)+`<g fill="${C.b}" stroke="${OL}" stroke-width="3"><ellipse cx="60" cy="30" rx="12" ry="20"/><ellipse cx="60" cy="30" rx="12" ry="20" transform="rotate(120 60 52)"/><ellipse cx="60" cy="30" rx="12" ry="20" transform="rotate(240 60 52)"/></g>`+ol(`<rect x="26" y="98" width="68" height="20" rx="9" fill="#fff"/>`)+`<circle cx="60" cy="108" r="7" fill="${C.g}" stroke="${OL}" stroke-width="2.5"/>`,'0 0 120 120'),
+  spkSw:svg(ol(`<rect x="22" y="14" width="76" height="76" rx="16" fill="#3A4C8F"/>`)+`<circle cx="42" cy="52" r="15" fill="${OL}"/><circle cx="78" cy="52" r="15" fill="${OL}"/><text x="94" y="22" font-size="28" font-weight="900" fill="${C.y}" stroke="${OL}" stroke-width="4" paint-order="stroke">♪</text>`+ol(`<rect x="26" y="96" width="68" height="20" rx="9" fill="#fff"/>`)+`<circle cx="60" cy="106" r="7" fill="${C.g}" stroke="${OL}" stroke-width="2.5"/>`,'0 0 120 120'),
+  charge:svg(ol(`<rect x="14" y="14" width="80" height="94" rx="12" fill="#3A4C8F"/>`)+`<rect x="22" y="22" width="64" height="76" rx="7" fill="url(#screen)"/><path d="M60 32 L40 64 h14 l-6 26 l24 -34 h-14z" fill="${C.y}" stroke="${OL}" stroke-width="3"/>`+ol(`<rect x="92" y="80" width="22" height="14" rx="6" fill="url(#metal)"/>`),'0 0 120 120'),
+  lampSw:svg(`<circle cx="60" cy="40" r="44" fill="url(#glow)"/>`+ol(`<path d="M34 12 h52 l14 40 h-80z" fill="${C.y}"/><rect x="56" y="50" width="8" height="30" fill="#DDE3F5"/><rect x="26" y="78" width="68" height="30" rx="12" fill="#fff"/>`)+`<circle cx="60" cy="93" r="9" fill="${C.g}" stroke="${OL}" stroke-width="3"/>`,'0 0 120 120'),
+  switchOn:svg(ol(`<rect x="34" y="8" width="52" height="104" rx="14" fill="#F7F8FC"/>`)+ol(`<rect x="44" y="20" width="32" height="80" rx="8" fill="#E4E8F4"/>`)+`<rect x="48" y="24" width="24" height="30" rx="5" fill="${C.r}"/><rect x="48" y="58" width="24" height="38" rx="5" fill="#C9CFE2"/>`+badgeOK(94,96,17),'0 0 120 120'),
+  switchOff:svg(ol(`<rect x="34" y="8" width="52" height="104" rx="14" fill="#F7F8FC"/>`)+ol(`<rect x="44" y="20" width="32" height="80" rx="8" fill="#E4E8F4"/>`)+`<rect x="48" y="24" width="24" height="38" rx="5" fill="#C9CFE2"/><rect x="48" y="66" width="24" height="30" rx="5" fill="#F7F8FC"/>`,'0 0 120 120'),
+  plugIn:svg(ol(`<rect x="8" y="14" width="70" height="70" rx="12" fill="#F7F8FC"/>`)+`<rect x="38" y="24" width="8" height="18" rx="2" fill="${OL}"/><rect x="18" y="56" width="18" height="8" rx="2" fill="${OL}"/><rect x="50" y="56" width="18" height="8" rx="2" fill="${OL}"/>`+`<g transform="translate(44 26) scale(.75)">${bigPlug(60,80)}</g>`,'0 0 120 120'),
+  usbA:svg(usbEnd('A',60,66,.92,true),'0 0 120 120'),
+  usbC:svg(usbEnd('C',60,62,.92),'0 0 120 120'),
+  plugA:svg(usbSide('A',4,62,true,.7)+arrowR(10,104,60),'0 0 120 120'),
+  plugC:svg(usbSide('C',4,62,null,.75)+arrowR(10,104,60),'0 0 120 120'),
+  stick:svg(dome(36,70,16)+dome(84,70,16)+`<path d="M44 40 q16 -18 32 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M68 32 l8 8 l-10 4" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,'0 0 120 120'),
+  flip:svg(usbSide('A',6,64,true,.62)+`<path d="M30 30 a34 22 0 0 1 64 0" fill="none" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M30 30 a34 22 0 0 1 64 0" fill="none" stroke="${C.y}" stroke-width="6" stroke-linecap="round"/><path d="M84 18 l12 12 l-16 4" fill="none" stroke="${C.y}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,'0 0 120 120'),
+  both:svg(usbEnd('C',60,36,.8)+usbEnd('C',60,84,.8)+badgeOK(102,104,15),'0 0 120 120'),
+  grip:svg(bigPlug(60,54)+grip(60,64),'0 0 120 120'),
+  pullout:svg(bigPlug(48,60)+grip(48,70)+`<path d="M86 20 v76 M70 80 l16 18 l16 -18" fill="none" stroke="${OL}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M86 20 v76 M70 80 l16 18 l16 -18" fill="none" stroke="${C.y}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`,'0 0 120 120'),
+  bolt:svg(ol(`<circle cx="60" cy="60" r="50" fill="${C.y}"/>`)+`<path d="M66 16 L34 66 h22 l-8 38 l36 -54 h-22z" fill="${OL}"/>`,'0 0 120 120'),
+  tapme:svg(`<g fill="none" stroke="${C.y}" stroke-width="7" stroke-linecap="round"><path d="M30 30 a34 34 0 0 1 60 0"/><path d="M18 18 a52 52 0 0 1 84 0"/></g>`+hand(38,46),'0 0 120 120')
+};
+
+/* ---------- scene illustrations (400x260) ---------- */
+/* wall socket + lamp. p: 0 plug on the floor -> 1 plug in the socket. Lamp lights only when plugged in and switched on */
+/* lampSw: undefined = lamp has no switch of its own; hi: 'sock' | 'plug' | 'lamp' rings the thing to press */
+/* other appliances on the same side table; each has its own switch (the charger connects to the iPad instead) */
+const table=ol(`<rect x="14" y="170" width="112" height="16" rx="8" fill="url(#wood)"/><rect x="24" y="184" width="12" height="44" rx="4" fill="url(#wood)"/><rect x="104" y="184" width="12" height="44" rx="4" fill="url(#wood)"/>`);
+const swPlate=(sw,hi,label)=>(hi?`<circle class="blink" cx="70" cy="166" r="22" fill="none" stroke="${C.y}" stroke-width="5"/>`:'')
+  +ol(`<rect x="50" y="155" width="40" height="22" rx="9" fill="#fff"/>`)+`<circle cx="70" cy="166" r="7.5" fill="${sw?C.g:'#7C86A8'}" stroke="${OL}" stroke-width="2.5"/>`
+  +`<text x="70" y="149" font-size="15" font-weight="900" text-anchor="middle" fill="#fff" stroke="${OL}" stroke-width="4" paint-order="stroke">${label}</text>`;
+const DEVS={
+  lamp:{draw:(lit,sw,hi)=>lamp(lit,sw,hi)},
+  fan:{draw:(lit,sw,hi)=>(lit?`<g fill="none" stroke="#BFE9FF" stroke-width="5" stroke-linecap="round" class="drift"><path d="M118 66 q16 -8 32 0"/><path d="M122 90 q18 -8 36 0"/><path d="M118 114 q16 -8 32 0"/></g>`:'')
+     +table+ol(`<rect x="64" y="108" width="12" height="50" rx="5" fill="#DDE3F5"/><circle cx="70" cy="80" r="40" fill="#2E4386"/>`)
+     +`<g class="${lit?'spin':''}" style="animation-duration:.5s"><g fill="${C.b}" stroke="${OL}" stroke-width="3"><ellipse cx="70" cy="58" rx="12" ry="21"/><ellipse cx="70" cy="58" rx="12" ry="21" transform="rotate(120 70 80)"/><ellipse cx="70" cy="58" rx="12" ry="21" transform="rotate(240 70 80)"/></g></g>`
+     +ol(`<circle cx="70" cy="80" r="8" fill="#fff"/>`)+swPlate(sw,hi,'風扇掣')},
+  speaker:{draw:(lit,sw,hi)=>table
+     +ol(`<rect x="32" y="62" width="76" height="70" rx="16" fill="#3A4C8F"/>`)
+     +`<circle cx="52" cy="97" r="15" fill="${OL}"/><circle cx="52" cy="97" r="6" fill="#7C86A8"/><circle cx="88" cy="97" r="15" fill="${OL}"/><circle cx="88" cy="97" r="6" fill="#7C86A8"/>`
+     +(lit?`<g class="drift"><text x="120" y="70" font-size="34" font-weight="900" fill="${C.y}" stroke="${OL}" stroke-width="4" paint-order="stroke">♪</text><text x="150" y="104" font-size="28" font-weight="900" fill="${C.g}" stroke="${OL}" stroke-width="4" paint-order="stroke">♫</text><text x="20" y="62" font-size="26" font-weight="900" fill="${C.pink}" stroke="${OL}" stroke-width="4" paint-order="stroke">♪</text></g><g fill="none" stroke="${C.y}" stroke-width="4" stroke-linecap="round" class="blink"><path d="M114 98 a18 18 0 0 1 0 28"/><path d="M124 90 a30 30 0 0 1 0 44"/></g>`:'')
+     +swPlate(sw,hi,'喇叭掣')},
+  charger:{from:sw=>sw?[104,146]:[134,198],
+     draw:(lit,sw,hi)=>table+ol(`<path d="M48 150 l-8 20 h60 l-8 -20z" fill="#DDE3F5"/><rect x="24" y="74" width="84" height="80" rx="12" fill="#3A4C8F"/>`)
+     +`<rect x="32" y="82" width="68" height="64" rx="7" fill="url(#screen)"/>`+`<g transform="translate(36 100) scale(.95)">${battery(0,0,lit)}</g>`
+     +(hi?`<circle class="blink" cx="106" cy="146" r="16" fill="none" stroke="${C.y}" stroke-width="5"/>`:'')
+     +`<text x="66" y="68" font-size="15" font-weight="900" text-anchor="middle" fill="#fff" stroke="${OL}" stroke-width="4" paint-order="stroke">iPad</text>`
+     +(sw?'':ol(`<rect x="128" y="190" width="18" height="12" rx="5" fill="url(#metal)"/>`))}
+};
+function artSwitch(p,on,hold,lampSw,hi,dev){
+  const D=DEVS[dev||'lamp'],fr=D.from?D.from(lampSw):[108,168];
+  p=clamp01(p);const cx=240,cy=206-(206-92)*p;
+  const lit=on&&p>=.999&&(lampSw==null||lampSw);
+  return svg(room(228,'hall')
+   +D.draw(lit,lampSw,hi==='lamp')
+   +(hi==='sock'?`<rect class="blink" x="294" y="58" width="50" height="80" rx="12" fill="none" stroke="${C.y}" stroke-width="6"/>`:'')
+   +socketPlate(178,40,on)
+   +(hi==='plug'?`<circle class="blink" cx="${cx}" cy="${cy}" r="50" fill="none" stroke="${C.y}" stroke-width="6"/>`:'')
+   +`<path d="M${fr[0]} ${fr[1]} C140 240 ${cx} 246 ${cx} ${cy+46}" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/><path d="M${fr[0]} ${fr[1]} C140 240 ${cx} 246 ${cx} ${cy+46}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>`
+   +bigPlug(cx,cy)
+   +(hold?grip(cx,cy+6):'')
+   +(on&&p<.999?`<text x="330" y="232" font-size="30" font-weight="900" fill="${C.r}" stroke="${OL}" stroke-width="5" paint-order="stroke">危險</text>`:'')
+   +(lit?badgeOK(368,40,22):''));
+}
+/* power bank + tablet. p: 0 apart -> 1 plugged in. stickerUp only matters for Type-A */
+function artUSB(type,p,stickerUp,showMatch){
+  p=clamp01(p);const A=type==='A',cy=150,tipIn=124,tip=Math.round(240-(240-tipIn)*p);
+  const ml=A?44:30,bl=84,bodyEnd=tip+ml+bl+18;
+  const charged=p>=.999&&(!A||stickerUp);
+  return svg(room(228,A?'bedr':'bath')
+   /* tablet on a stand, cable from the plug */
+   +ol(`<path d="M304 104 l-14 26 h56 l-14 -26z" fill="#DDE3F5"/><rect x="262" y="14" width="124" height="92" rx="14" fill="#3A4C8F"/>`)+`<rect x="272" y="24" width="104" height="72" rx="8" fill="url(#screen)"/>`+battery(296,46,charged)
+   +`<path d="M${bodyEnd} ${cy} C${bodyEnd+40} ${cy} 300 180 318 130" fill="none" stroke="${OL}" stroke-width="11" stroke-linecap="round"/><path d="M${bodyEnd} ${cy} C${bodyEnd+40} ${cy} 300 180 318 130" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>`
+   +usbSide(type,tip,cy,A?stickerUp:null)
+   /* power bank drawn on top so the metal end disappears inside it */
+   +ol(`<rect x="18" y="98" width="${tipIn+14}" height="108" rx="20" fill="#F7F8FC"/>`)+gl(46,112,24,6)
+   +`<rect x="${tipIn+4}" y="${cy-(A?17:12)}" width="10" height="${A?34:24}" rx="${A?2:10}" fill="${OL}"/>`
+   +`<g fill="${C.g}"><circle cx="44" cy="186" r="5"/><circle cx="60" cy="186" r="5"/><circle cx="76" cy="186" r="5"/></g>`
+   +(A?dome(tipIn-2,98,10):'')
+   +(A&&showMatch&&stickerUp&&p<.999?`<path d="M${tipIn+8} 92 Q${(tipIn+tip+ml+bl/2)/2} 62 ${tip+ml+bl/2} ${cy-26}" fill="none" stroke="${C.y}" stroke-width="5" stroke-dasharray="8 7" stroke-linecap="round"/>`:'')
+   /* label card: what the end looks like */
+   +ol(`<rect x="16" y="14" width="150" height="70" rx="16" fill="#fff"/>`)+usbEnd(type,62,48,.55,A)
+   +`<text x="128" y="58" font-size="28" font-weight="900" text-anchor="middle" fill="${OL}">${type}</text>`
+   +(A&&p<.999&&!stickerUp?`<text x="214" y="${cy+56}" font-size="26" font-weight="900" fill="${C.r}" stroke="${OL}" stroke-width="5" paint-order="stroke">貼紙喺下面</text>`:''));
+}
+/* close-up of the plug end with a fingertip feeling it */
+function artShape(type,ok){
+  const A=type==='A';
+  return svg(room(228,A?'bedr':'bath')
+   +ol(`<rect x="44" y="26" width="312" height="176" rx="26" fill="#fff"/>`)
+   +usbEnd(type,170,112,1.9,A)
+   +`<g transform="translate(286 132) rotate(-30)">`+ol(`<rect x="-14" y="-6" width="30" height="90" rx="15" fill="${C.skin}"/><rect x="-26" y="40" width="58" height="70" rx="24" fill="${C.skin}"/>`)+`<rect x="-6" y="-2" width="14" height="14" rx="6" fill="#fff" opacity=".5"/></g>`
+   +ol(`<rect x="94" y="214" width="212" height="40" rx="20" fill="${ok?C.g:C.y}"/>`)
+   +`<text x="200" y="243" font-size="25" font-weight="900" text-anchor="middle" fill="${OL}">${A?'Type-A 扁長方形':'Type-C 扁橢圓形'}</text>`
+   +(ok?badgeOK(330,44,22):''));
+}
+/* Type-C works both ways up: two plugs, one flipped, both tick */
+function artBoth(ok){
+  return svg(room(228,'bath')
+   +ol(`<rect x="34" y="30" width="150" height="150" rx="24" fill="#fff"/><rect x="216" y="30" width="150" height="150" rx="24" fill="#fff"/>`)
+   +usbEnd('C',109,105,1.1)+`<g transform="rotate(180 291 105)">${usbEnd('C',291,105,1.1)}</g>`
+   +`<text x="109" y="62" font-size="24" font-weight="900" text-anchor="middle" fill="${OL}">正面</text><text x="291" y="62" font-size="24" font-weight="900" text-anchor="middle" fill="${OL}">反轉</text>`
+   +(ok?badgeOK(160,160,22)+badgeOK(342,160,22):'')
+   +ol(`<rect x="110" y="196" width="180" height="44" rx="22" fill="${ok?C.g:C.y}"/>`)+`<text x="200" y="227" font-size="26" font-weight="900" text-anchor="middle" fill="${OL}">兩面都插得</text>`);
+}
+
+function artStar(){
+  let rays='';for(let i=0;i<12;i++){rays+=`<rect x="194" y="8" width="12" height="40" rx="6" fill="${i%2?C.g:C.b}" transform="rotate(${i*30} 200 146)"/>`}
+  const cf=[[40,40,C.r],[90,210,C.b],[330,40,C.g],[360,200,C.pink],[60,130,C.y],[340,120,C.o],[120,30,C.g],[280,230,C.y]].map(([x,y,c],i)=>`<rect x="${x}" y="${y}" width="16" height="10" rx="4" fill="${c}" stroke="${OL}" stroke-width="3" transform="rotate(${i*37} ${x} ${y})" class="drift"/>`).join('');
+  return svg(cf+rays+`<g class="pop" style="transform-box:fill-box;transform-origin:center">`+ol(`<path d="M200 50 L229 116 L300 122 L246 168 L262 238 L200 202 L138 238 L154 168 L100 122 L171 116Z" fill="${C.y}"/>`,14)+gl(176,104,14,8,-30)+face(200,152,36)+`</g>`,'0 0 400 260');
+}
+
+/* ---------- extra drawings for teaching slides ---------- */
+const place=(ic,x,y,w)=>ic.replace('<svg ',`<svg x="${x}" y="${y}" width="${w}" height="${w}" `);
+/* up to three picture cards in a row; hi = 1-based card to highlight (0 = none) */
+function artCards(items,hi,bg){
+  const n=items.length,cw=112,gap=(400-n*cw)/(n+1);
+  return svg(room(236,bg||'hall')+items.map((it,i)=>{const x=gap+i*(cw+gap),on=hi===i+1;
+    return (on?`<rect x="${x-7}" y="${16}" width="${cw+14}" height="${198}" rx="24" fill="${C.y}"/>`:'')
+      +ol(`<rect x="${x}" y="23" width="${cw}" height="184" rx="20" fill="#fff"/>`)
+      +place(IC[it.ic],x+8,36,96)
+      +`<circle cx="${x+18}" cy="${36}" r="15" fill="#F08A3C" stroke="${OL}" stroke-width="3"/><text x="${x+18}" y="${42}" font-size="17" font-weight="900" text-anchor="middle" fill="#fff">${i+1}</text>`
+      +(it.t.includes('，')?`<text x="${x+cw/2}" y="162" font-size="21" font-weight="900" text-anchor="middle" fill="${OL}">${it.t.split('，').map((w,j)=>`<tspan x="${x+cw/2}" dy="${j?26:0}">${w}</tspan>`).join('')}</text>`
+        :`<text x="${x+cw/2}" y="172" font-size="${it.t.length>5?17:21}" font-weight="900" text-anchor="middle" fill="${OL}">${it.t}</text>`)}).join(''));
+}
+function artSocketBig(on){
+  return svg(room(236,'hall')+`<g transform="translate(200 118) scale(1.5) translate(-88 -58)">${socketPlate(0,0,on)}</g>`
+   +ol(`<rect x="130" y="206" width="140" height="44" rx="22" fill="${on?C.r:'#DDE3F5'}"/>`)+`<text x="200" y="238" font-size="28" font-weight="900" text-anchor="middle" fill="${on?'#fff':OL}">${on?'開：紅色':'關'}</text>`);
+}
+function artCompare(hi){
+  const card=(x,t,on)=>(on?`<rect x="${x-7}" y="17" width="174" height="200" rx="26" fill="${C.y}"/>`:'')+ol(`<rect x="${x}" y="24" width="160" height="186" rx="22" fill="#fff"/>`);
+  return svg(room(236,'bath')+card(24,'A',hi===1)+card(216,'C',hi===2)
+   +usbEnd('A',104,104,1.15,true)+usbEnd('C',296,104,1.15)
+   +`<text x="104" y="62" font-size="26" font-weight="900" text-anchor="middle" fill="${OL}">Type-A</text><text x="296" y="62" font-size="26" font-weight="900" text-anchor="middle" fill="${OL}">Type-C</text>`
+   +`<text x="104" y="176" font-size="22" font-weight="900" text-anchor="middle" fill="#4A63B8">扁長方形</text><text x="296" y="176" font-size="22" font-weight="900" text-anchor="middle" fill="#2FA85E">扁橢圓形</text>`
+   +`<text x="104" y="200" font-size="17" font-weight="700" text-anchor="middle" fill="${OL}">有方向</text><text x="296" y="200" font-size="17" font-weight="700" text-anchor="middle" fill="${OL}">兩面都得</text>`);
+}
+
+/* ---------- the lesson as a slide deck (KS3 第 1–2 週) ---------- */
+const P1='牆壁電掣，插頭',P2='USB 插頭',P3='安全拔插頭';
+const STEPS_ON=[{ic:'switchOff',t:'關電掣'},{ic:'plugIn',t:'插好插蘇'},{ic:'switchOn',t:'開電掣'},{ic:'lampSw',t:'開燈掣'}];
+/* page 5 states, k = presses so far: 0 not started, 1 ask 關電掣, 2 ask 插插蘇, 3 ask 開電掣, 4 ask 開燈掣, 5 done */
+function devPage(d){const A=(p,on,sw,hi)=>artSwitch(p,on,false,sw,hi,d.key);
+  const ST=[k=>A(0,true,false),k=>A(0,true,false,'sock'),k=>A(st.taps/10,false,false,'plug'),k=>A(1,false,false,'sock'),k=>A(1,true,false,'lamp'),k=>A(1,true,true)];
+  return {part:P1,kind:'see',practice:1,need:5,max:5,tapAt:2,n:10,swK:k=>k===2||k===4||(k===5&&d.key!=='charger'),
+    title:d.title,steps:[STEPS_ON[0],STEPS_ON[1],STEPS_ON[2],{ic:d.ic,t:d.last}],key:'先關掣，再插蘇',say:d.title+'。',
+    art:k=>ST[Math.min(k,5)](k),
+    anim:[[()=>A(0,true,false),-1,1300],[()=>A(0,false,false),0,1300],[()=>A(.35,false,false),1,450],[()=>A(.7,false,false),1,450],[()=>A(1,false,false),1,1100],[()=>A(1,true,false),2,1300],[()=>A(1,true,true),3,2400]],
+    sayK:k=>['','先關電掣','插好插蘇，撳十下','開電掣',d.last,d.done][Math.min(k,5)],
+    btnK:k=>['開始','關電掣',st.taps?`插插蘇 ${st.taps}/10`:'插插蘇（10 下）','開電掣',d.last,'做得好'][Math.min(k,5)],
+    icK:k=>['tapme','switchOff','plugIn','switchOn',d.ic,'tapme'][Math.min(k,5)],
+    curK:k=>k>=1&&k<=4?k-1:-1,onDone:d.onDone,hold:d.hold,note:d.note};}
+const LAMP5=[k=>artSwitch(0,true,false,false),k=>artSwitch(0,true,false,false,'sock'),k=>artSwitch(st.taps/10,false,false,false,'plug'),k=>artSwitch(1,false,false,false,'sock'),k=>artSwitch(1,true,false,false,'lamp'),k=>artSwitch(1,true,false,true)];
+const STEPS_OUT=[{ic:'switchOff',t:'先關掣'},{ic:'grip',t:'揸住插頭'},{ic:'pullout',t:'慢慢拔出'}];
+/* dark room: the lamp is off until the switch is pressed */
+function artCeiling(on){
+  const sx=22,sy=46,z=1.45;
+  return svg(room(228,'hall')
+   +`<rect width="400" height="22" fill="#EEF1F8"/><rect y="20" width="400" height="5" fill="#000" opacity=".15"/>`
+   +(on?`<path d="M232 34 L120 228 H344 Z" fill="${C.y}" opacity=".18"/><circle cx="232" cy="40" r="120" fill="url(#glow)"/>`:'')
+   /* hidden wire in the wall from the switch to the light */
+   +`<path d="M${sx+45*z} ${sy} V40 H200" fill="none" stroke="${on?C.y:'#9AA3C7'}" stroke-width="5" stroke-dasharray="10 8" stroke-linecap="round" opacity="${on?1:.6}"/>`
+   +ol(`<rect x="196" y="20" width="72" height="14" rx="5" fill="#DDE3F5"/><path d="M200 32 h64 a32 26 0 0 1 -64 0z" fill="${on?'#FFF3A6':'#B4BCD6'}"/>`)
+   +(on?`<ellipse cx="232" cy="44" rx="20" ry="10" fill="#fff" opacity=".8"/>`:'')
+   +shade(310,228,24)+fig(310,150,1.1,C.b)+plant(375,226,.7)
+   /* light off: the room goes dark, the switch stays visible so students can find it */
+   +(on?'':`<rect width="400" height="260" fill="#03060F" opacity=".74"/>`)
+   /* wall light switch, drawn large */
+   +`<g transform="translate(${sx} ${sy}) scale(${z}) translate(${-sx} ${-sy})">`
+   +ol(`<rect x="${sx}" y="${sy}" width="90" height="100" rx="14" fill="#F7F8FC"/>`)
+   +ol(`<rect x="${sx+22}" y="${sy+16}" width="46" height="68" rx="9" fill="#E4E8F4"/>`)
+   +(on?`<rect x="${sx+26}" y="${sy+20}" width="38" height="26" rx="6" fill="#fff"/><rect x="${sx+26}" y="${sy+50}" width="38" height="30" rx="6" fill="#B4BCD6"/>`
+       :`<rect x="${sx+26}" y="${sy+20}" width="38" height="30" rx="6" fill="#B4BCD6"/><rect x="${sx+26}" y="${sy+54}" width="38" height="26" rx="6" fill="#fff"/>`)
+   +ol(`<rect x="${sx+10}" y="${sy+104}" width="70" height="34" rx="17" fill="${on?C.y:'#DDE3F5'}"/>`)
+   +`<text x="${sx+45}" y="${sy+129}" font-size="22" font-weight="900" text-anchor="middle" fill="${OL}">${on?'開':'關'}</text></g>`
+   +(on?badgeOK(372,52,20):''));
+}
+function artDark(on){const base=artCeiling(on);if(on)return base;
+  return base.replace('<rect width="400" height="260" filter="url(#grain)"/>',`<rect width="400" height="260" filter="url(#grain)"/><g transform="translate(330 70)">`+ol(`<circle cx="0" cy="0" r="38" fill="#fff"/><path d="M-14 28 l-10 22 l26 -16z" fill="#fff"/>`)+`<text x="0" y="17" font-size="50" font-weight="900" text-anchor="middle" fill="${OL}">?</text></g>`);}
+const SL=[
+ {part:'開始',kind:'see',need:1,cover:1,title:'電力安全官',lines:['STEAM · KS3 · 第 1–2 週','辨識 USB 種類與安全連接'],key:'安全用電',
+  say:'電力安全官！',art:()=>IC.bolt,sayK:()=>'電力安全官！',btn:'撳掣開始',
+  note:'歡迎學生。介紹今日嘅角色：「電力安全官」。請學生撳大掣，聽到「電力安全官」，確認每位學生嘅掣都有反應。'},
+ {part:'開始',kind:'see',need:3,title:'今日學三樣嘢',steps:[{ic:'switchOn',t:P1},{ic:'grip',t:P3},{ic:'usbA',t:P2}],key:'一步一步學',
+  say:'今日學三樣嘢。',art:k=>artCards([{ic:'switchOn',t:P1},{ic:'grip',t:P3},{ic:'usbA',t:P2}],k?((k-1)%3)+1:0),sayK:k=>[P1,P3,P2][(k-1)%3],btn:'睇下一樣',
+  note:'逐項介紹今日三個學習重點。學生每撳一次掣，就會亮起下一張圖卡並讀出名稱。'},
+ {part:'開始',kind:'see',need:1,max:1,swK:()=>true,title:'房間沒光，怎麼辦？',lines:['好黑呀！','燈冇著'],key:'想一想',
+  say:'房間冇光，點算好？',art:k=>artDark(k%2===1),sayK:k=>k%2?'開咗電掣，有光喇！':'閂咗燈，冇光',btn:'開燈',btnK:k=>k?'有光喇':'開燈',
+  note:'引起動機：先關掉課室燈，問學生「房間冇光，點算好？」引導學生講出、指出或用圖卡表示「開燈／開電掣」。學生撳大掣，畫面牆壁燈掣會打開，天花燈亮起；再撳一下會熄。'},
+ /* part 1 */
+ {part:P1,kind:'see',need:10,swK:()=>true,title:'認識牆壁電掣',lines:['牆壁電掣連住天花燈','撳落去：開燈','撳上嚟：閂燈'],key:'撳落去＝開',
+  say:'呢個係牆壁電掣，連住天花板嘅燈。',art:k=>artCeiling(k%2===1),sayK:k=>k%2?'開燈':'閂燈',btn:'拍一拍，開關電掣',
+  note:'展示課室真實的燈掣。全失明學生可觸摸燈掣上下兩邊的高低，弱視學生留意天花燈著同熄。學生撳大掣，畫面燈掣會開關，天花燈跟住著同熄。'},
+ {part:P1,kind:'see',need:10,max:10,title:'認識插插頭',lines:['插頭有三隻腳','對準插座，推入去'],key:'對準插座',
+  say:'呢個係插頭。我哋一齊將插頭插落插座，撳十下。',art:k=>artSwitch(Math.min(k,10)/10,false,false,undefined,k<10?'plug':undefined),
+  sayK:k=>['','一','二','三','四','五','六','七','八','九','插好咗！'][Math.min(k,10)],btn:'插插頭',ic:'plugIn',
+  note:'派發無通電的模擬插座及插頭讓學生觸摸三隻腳。學生每撳一下大掣，畫面插頭就向插座推近少少，同時讀出數字；撳夠 10 下插頭插好。自己練習時會顯示「撳 10 下」及進度圓點。'},
+  devPage({key:'lamp',title:'插好插蘇開座枱燈嘅步驟',last:'開燈掣',ic:'lampSw',done:'燈著咗！做得好！',
+   note:'按步驟逐下撳：開始 → 關電掣 → 插插蘇（撳 10 下，插蘇一步步插入）→ 開電掣（座枱燈仲未著）→ 開燈掣（座枱燈著）。強調座枱燈本身有自己的燈掣，開咗電掣仲要開燈掣。可配合無通電模擬插座及真座枱燈示範。'}),
+  devPage({key:'fan',title:'插好插蘇開風扇嘅步驟',last:'開風扇掣',ic:'fanSw',done:'風扇轉喇，好涼！',onDone:()=>sfx('wind'),hold:8500,
+   note:'同座枱燈一樣嘅步驟：關電掣 → 插插蘇（10 下）→ 開電掣 → 開風扇掣。開咗風扇後，可以開真風扇讓學生用手或面感受風。'}),
+  devPage({key:'speaker',title:'插好插蘇開喇叭嘅步驟',last:'開喇叭掣',ic:'spkSw',done:'有音樂喇！',onDone:()=>sfx('music'),hold:10500,
+   note:'步驟：關電掣 → 插插蘇（10 下）→ 開電掣 → 開喇叭掣。開咗喇叭會播一段音樂，可再用真喇叭播學生喜歡的歌作獎勵。'}),
+  devPage({key:'charger',title:'插好插蘇開 iPad 充電器嘅步驟',last:'插 iPad',ic:'charge',done:'充緊電喇！',
+   note:'步驟：關電掣 → 插好充電器插蘇（10 下）→ 開電掣 → 將充電線插入 iPad。iPad 電池由紅轉綠，表示充緊電。下一部分學安全拔插頭。'}),
+ /* part 2: safe unplugging */
+ {part:P3,kind:'see',need:3,title:'拔插頭要咁做',steps:STEPS_OUT,key:'唔好拉條線',
+  say:'拔插頭要咁做。',art:k=>{const j=k?(k-1)%3:-1;return j===0?artSwitch(1,false):j===1?artSwitch(1,false,true):j===2?artSwitch(.4,false,true):artCards(STEPS_OUT,0)},
+  sayK:k=>STEPS_OUT[(k-1)%3].t,btn:'睇下一步',
+  note:'示範安全拔插頭：先關掣、手揸住插頭（唔好拉電線）、慢慢拔出。學生每撳一次掣睇下一步。'},
+ {part:P3,kind:'one',sw:1,title:'練習：關電掣',lines:['拔插頭之前，先關掣'],key:'先關掣',
+  say:'撳掣，關電掣。',ok:'關咗掣，安全。',btn:'關電掣',ic:'switchOff',art:ok=>artSwitch(1,!ok),
+  note:'學生撳大掣，電掣關上、紅色消失。'},
+ {part:P3,kind:'one',title:'練習：揸住插頭',lines:['用手揸住插頭','唔好拉條線'],key:'揸住插頭',
+  say:'撳掣，揸住插頭。',ok:'揸住插頭，唔好拉條線。',btn:'揸住插頭',ic:'grip',art:ok=>artSwitch(1,false,ok),
+  note:'有機能限制的學生可用大握柄輔助插頭。學生撳掣，畫面出現手揸住插頭。'},
+ {part:P3,kind:'tap',n:10,title:'練習：慢慢拔出',lines:['揸住插頭，慢慢拔出嚟'],key:'慢慢拔',
+  say:'拍拍，慢慢拔出！',ok:'拔咗出嚟，好安全。',art:p=>artSwitch(1-p,false,true),
+  note:'學生撳大掣 10 下，插頭慢慢拔出。'},
+ /* part 3: USB plugs */
+ {part:P2,kind:'see',need:2,title:'認識 USB 插頭',lines:['Type-A：扁長方形','Type-C：扁橢圓形'],key:'摸形狀',
+  say:'USB 插頭有兩種。',art:k=>artCompare(k?((k-1)%2)+1:0),sayK:k=>(k-1)%2?'Type-C，扁橢圓形，兩面都得':'Type-A，扁長方形，有方向',btn:'睇下一款',
+  note:'派發 Type-A 及 Type-C 插頭讓學生觸摸。全失明學生用手指感受「扁長方」同「扁橢圓」的分別。學生撳掣輪流聽兩款的特徵。'},
+ {part:P2,kind:'one',okSay:'Type-A',title:'摸一摸：Type-A',lines:['扁長方形','有方向'],key:'Type-A',
+  say:'摸一摸。撳掣，呢個係 Type-A。',ok:'扁長方形，係 Type-A。',btn:'Type-A',ic:'usbA',art:ok=>artShape('A',ok),
+  note:'學生手握 Type-A 插頭，摸到扁長方形後撳掣確認。'},
+ {part:P2,kind:'one',title:'貼紙對貼紙',lines:['Type-A 有方向','插頭貼紙向上，對住插口貼紙'],key:'貼紙對貼紙',
+  say:'貼紙喺下面。撳掣，反轉插頭。',ok:'貼紙向上，啱方向。',btn:'反轉',ic:'flip',art:ok=>artUSB('A',0,ok,ok),
+  note:'在插頭及插口貼上相同的凸點貼紙。引導學生摸到「貼紙對貼紙」先插。學生撳掣，畫面中的插頭會反轉到正確方向。'},
+ {part:P2,kind:'tap',n:10,title:'練習：插入 Type-A',lines:['貼紙向上，慢慢推入去'],key:'推入去',
+  say:'拍拍，插入去！',ok:'插好咗，充緊電。',art:p=>artUSB('A',p,true,true),
+  note:'學生撳大掣 10 下，插頭會慢慢推入，iPad 電池轉綠。可同步用模擬 USB Hub 實際操作。'},
+ {part:P2,kind:'one',okSay:'Type-C',title:'摸一摸：Type-C',lines:['扁橢圓形','冇方向'],key:'Type-C',
+  say:'摸一摸。撳掣，呢個係 Type-C。',ok:'扁橢圓形，係 Type-C。',btn:'Type-C',ic:'usbC',art:ok=>artShape('C',ok),
+  note:'學生手握 Type-C 插頭，比較它比 Type-A 細、而且兩邊圓。摸到後撳掣確認。'},
+ {part:P2,kind:'one',okSay:'兩面都得',title:'兩面都插得',lines:['Type-C 正面、反轉都插得'],key:'兩面都得',
+  say:'反轉得唔得？撳掣。',ok:'兩面都插得。',btn:'兩面都得',ic:'both',art:ok=>artBoth(ok),
+  note:'讓學生把 Type-C 插頭反轉再插，體驗兩面都插得。'},
+ {part:P2,kind:'tap',n:10,title:'練習：插入 Type-C',lines:['對準插口，推入去'],key:'推入去',
+  say:'拍拍，插入去！',ok:'插好咗，充緊電。',art:p=>artUSB('C',p),
+  note:'學生撳大掣 10 下，Type-C 插頭插入並開始充電。'},
+ /* wrap up */
+ {part:'總結',kind:'see',need:3,navy:1,title:'電力安全口訣',steps:[{ic:'switchOff',t:'先關掣'},{ic:'stick',t:'認形狀'},{ic:'grip',t:'揸住插頭'}],key:'先關掣・認形狀・揸住插頭',
+  say:'電力安全口訣：先關掣，認形狀，揸住插頭。',art:k=>artCards([{ic:'switchOff',t:'先關掣'},{ic:'stick',t:'認形狀'},{ic:'grip',t:'揸住插頭'}],k?((k-1)%3)+1:0),
+  sayK:k=>['先關掣','認形狀','揸住插頭'][(k-1)%3],btn:'讀口訣',
+  note:'全班一齊讀口訣。學生每撳一次掣，讀出下一句。'},
+ {part:'完成',kind:'end',title:'做得好！',lines:['你係電力安全官！'],key:'電力安全官',
+  say:'做得好！你係電力安全官！',art:()=>artStar(),btn:'拍手',
+  note:'讚賞學生。白板會顯示每位學生完成的練習數目，可作課堂記錄。'}
+];
+const PRACTICE=SL.map((s,i)=>s.kind==='one'||s.kind==='tap'||s.practice?i:-1).filter(i=>i>=0);
+const PARTS=[P1,P3,P2];
+
+/* ---------- storage (per device convenience) ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('usb2-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('usb2-'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- state ---------- */
+const st={mode:null,view:'start',i:0,k:0,ok:false,taps:0,lock:false,v:0,
+  done:new Set(),code:'',codeIn:'',name:store.get('name',''),conn:false,peers:[],hostHere:false,lastKey:'',msg:'',sound:true,notes:store.get('notes',false)};
+let rm=null, timers=[];
+const clearTimers=()=>{timers.forEach(clearTimeout);timers=[]};
+const later=(fn,ms)=>{timers.push(setTimeout(fn,ms))};
+
+/* ---------- audio ---------- */
+let ac=null, voice=null;
+function unlockAudio(){try{if(!ac){const A=window.AudioContext||window.webkitAudioContext;if(A)ac=new A()}if(ac&&ac.state==='suspended')ac.resume()}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+function pickVoice(){try{const vs=speechSynthesis.getVoices();voice=vs.find(v=>/zh[-_]HK/i.test(v.lang))||vs.find(v=>/yue/i.test(v.lang))||vs.find(v=>/zh/i.test(v.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function tone(f,t0,dur,type,vol){if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;const t=ac.currentTime+t0;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.25,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur+0.05)}
+let noiseBuf=null;
+function clickNoise(t0,vol){if(!ac)return;
+  if(!noiseBuf){noiseBuf=ac.createBuffer(1,Math.floor(ac.sampleRate*.03),ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,6)}
+  const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();src.buffer=noiseBuf;f.type='bandpass';f.frequency.value=2200;f.Q.value=.8;g.gain.value=vol;
+  src.connect(f).connect(g).connect(ac.destination);src.start(ac.currentTime+t0);}
+function sfx(n){if(!st.sound||!ac)return;try{
+  if(n==='ding'){tone(880,0,.7);tone(659,.45,1)}
+  else if(n==='alarm'){for(let i=0;i<6;i++)tone(1400,i*.28,.16,'square',.07)}
+  else if(n==='beep'){for(let i=0;i<4;i++)tone(1000,i*.3,.15,'square',.07)}
+  else if(n==='click'){tone(300,0,.08,'triangle',.3)}
+  else if(n==='ok'){[523,659,784].forEach((f,i)=>tone(f,i*.12,.35,'triangle',.3))}
+  else if(n==='retry'){tone(440,0,.25,'triangle',.2);tone(392,.22,.35,'triangle',.2)}
+  else if(n==='switch'){clickNoise(0,.9);clickNoise(.045,.45);tone(2600,0,.012,'square',.05)}
+  else if(n==='music'){/* about 9 seconds: a cheerful tune played twice with a bass note on each beat */
+    const mel=[523,659,784,659,880,784,659,523,587,659,698,659,587,523,587,659,523,659,784,1047,880,784,659,784,698,659,587,523];
+    for(let r=0;r<2;r++)mel.forEach((f,i)=>{const t=r*mel.length*.16+i*.16;tone(f,t,.22,'triangle',.2);if(i%4===0)tone(f/4,t,.5,'sine',.18)})}
+  else if(n==='wind'){if(!ac)return;/* about 7 seconds of whooshing wind with gusts */
+    const sec=7,len=Math.floor(ac.sampleRate*sec),b=ac.createBuffer(1,len,ac.sampleRate),d=b.getChannelData(0);let l=0;
+    for(let i=0;i<len;i++){const t=i/ac.sampleRate;l=l*.98+(Math.random()*2-1)*.02;const gust=.55+.45*Math.sin(2*Math.PI*t/1.4);const env=Math.min(1,t/.4,(sec-t)/.8);d[i]=l*8*gust*env}
+    const src=ac.createBufferSource(),g=ac.createGain();src.buffer=b;g.gain.value=.6;src.connect(g).connect(ac.destination);src.start()}
+  else if(n==='cheer'){[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.13,.4,'triangle',.28))}
+}catch(e){}}
+/* spoken Cantonese: 拔插頭 is said 「蚊」插頭; the screen keeps 拔 */
+function speak(text,onend){text=String(text).replace(/拔/g,'蚊');let fired=false;const done=()=>{if(!fired){fired=true;onend&&onend()}};
+  if(!st.sound||!('speechSynthesis' in window)){later(done,Math.max(1200,text.length*260));return}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-HK';if(voice)u.voice=voice;u.rate=.85;u.onend=done;u.onerror=done;speechSynthesis.speak(u)}catch(e){}
+  later(done,Math.max(1800,text.length*380));}
+
+/* ---------- room ---------- */
+let roomP=null;
+function getRoom(){if(!roomP)roomP=(async()=>{try{return(window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){return null}})();return roomP}
+getRoom();
+async function joinRoom(code){
+  const room=await getRoom();
+  if(!room){st.msg='連線功能而家用唔到。請確認呢部機已登入 claude.ai，或者改用單機簡報。';return false}
+  try{rm=await room.join('usbdeck-'+code)}catch(e){st.msg='加入唔到房間，請再試，或者改用單機簡報。';rm=null;return false}
+  st.code=code;
+  rm.onPeers(onPeers,()=>{st.conn=false;renderBits()});
+  rm.onConnection(c=>{st.conn=c;renderBits()},()=>{});
+  return true;
+}
+function leaveRoom(){if(rm){try{rm.leave()}catch(e){}}rm=null;st.peers=[];st.conn=false}
+function push(){if(!rm)return;let p;
+  if(st.mode==='host')p={r:'h',i:st.i,v:st.v};
+  else p={r:'s',nm:st.name.slice(0,16),i:st.hostHere?st.i:-1,k:Math.min(st.k,99),ok:st.ok?1:0,t:st.taps,dn:[...st.done]};
+  rm.presence(p).catch(()=>{});}
+function students(){return st.peers.filter(p=>p.presence&&p.presence.r==='s'&&typeof p.presence.nm==='string')}
+function onPeers(ch){st.peers=ch.peers;
+  if(st.mode==='student'){const hs=ch.peers.filter(p=>p.presence&&p.presence.r==='h'&&Number.isInteger(p.presence.i));const was=st.hostHere;st.hostHere=hs.length>0;
+    if(hs.length){const h=hs.reduce((a,b)=>a.updatedAt>=b.updatedAt?a:b).presence;const key=h.i+'|'+h.v;
+      if(key!==st.lastKey||!was){st.lastKey=key;goSlide(Math.max(0,Math.min(SL.length-1,h.i)));return}}
+    else if(was){render();push();return}}
+  renderBits();}
+
+/* ---------- slides ---------- */
+const presenter=()=>st.mode==='host'||st.mode==='single';
+function goSlide(i){clearTimers();try{speechSynthesis.cancel()}catch(e){}
+  st.view='deck';st.i=i;st.k=0;st.ok=false;st.taps=0;st.lock=false;
+  if(st.mode==='host')st.v++;
+  render();push();
+  const s=SL[i];
+  if(presenter()||st.mode==='solo')later(()=>speak(s.say),350);
+  else if(s.kind==='one'||s.kind==='tap')later(()=>speak(s.say),350);
+  if(s.kind==='end'&&!presenter())later(()=>sfx('cheer'),300);}
+function next(){if(st.i<SL.length-1)goSlide(st.i+1)}
+function prev(){if(st.i>0)goSlide(st.i-1)}
+/* one press of the switch, the corner button or the picture */
+function press(x,y){const s=SL[st.i];if(!s)return;
+  if(s.kind==='tap'){if(st.ok||st.lock)return;const r=document.getElementById('artbox');const b=r?r.getBoundingClientRect():{left:0,top:0,width:0,height:0};
+    tapOnce(x!=null?x:b.left+b.width/2,y!=null?y:b.top+b.height/2);return}
+  if(s.kind==='one'){if(st.ok){speak(s.okSay||s.ok);return}st.ok=true;st.done.add(st.i);if(s.sw){sfx('switch');setTimeout(()=>sfx('ok'),250)}else sfx('ok');speak(s.okSay||('做得好！'+s.ok));render();push();soloNext(3000);roomRepeat(3500);return}
+  if(s.kind==='end'){sfx('cheer');speak('做得好！');st.k++;pop();return}
+  if(s.cover){st.k++;sfx('ok');speak(s.sayK(st.k));pop();push();if(st.k===s.need)soloNext(2200);return}
+  if(s.max&&st.k>=s.max){speak(s.sayK(st.k));return}
+  if(s.tapAt&&st.k===s.tapAt){const now=Date.now();if(now-(st.lastTap||0)<90)return;st.lastTap=now;
+    st.taps=Math.min(s.n,st.taps+1);const r=document.getElementById('artbox');if(r){const b=r.getBoundingClientRect();ripple(x!=null?x:b.left+b.width/2,y!=null?y:b.top+b.height/2)}
+    tone(480+st.taps*55,0,.14,'triangle',.28);
+    if(st.taps>=s.n){st.k++;st.taps=0;sfx('ok');render();push();speak('插好咗！'+s.sayK(st.k));return}
+    render();push();return}
+  st.k++;const fin=s.max&&st.k===s.max;if(fin&&s.practice)st.done.add(st.i);if(fin&&s.onDone)setTimeout(s.onDone,700);
+  if(s.swK&&s.swK(st.k)){sfx('switch');if(fin)setTimeout(()=>sfx('ok'),250)}else sfx(fin?'ok':'click');render();push();speak(s.sayK(st.k));if(st.k===s.need)soloNext(s.hold||2800);if(fin)roomRepeat((s.hold||2800)+800);}
+function roomRepeat(ms){if(st.mode!=='student')return;const at=st.i,v=st.lastKey;
+  later(()=>{if(st.mode!=='student'||st.i!==at||st.lastKey!==v)return;const s=SL[at];
+    st.k=0;st.ok=false;st.taps=0;st.lock=false;render();push();speak('再做一次。'+(s.kind==='one'||s.kind==='tap'?s.say:''))},ms);}
+function soloNext(ms){if(st.mode!=='solo'||st.i>=SL.length-1)return;const at=st.i;later(()=>{if(st.mode==='solo'&&st.i===at)next()},ms)}
+function pop(){const a=document.getElementById('artbox');if(a){a.classList.remove('bump');void a.offsetWidth;a.classList.add('bump')}}
+function tapOnce(x,y){const now=Date.now();if(now-(st.lastTap||0)<90)return;st.lastTap=now;
+  const s=SL[st.i];st.taps=Math.min(s.n,st.taps+1);ripple(x,y);tone(480+st.taps*55,0,.14,'triangle',.28);
+  const ab=document.getElementById('artbox');if(ab)ab.innerHTML=s.art(st.taps/s.n);const tb=document.getElementById('tapbar');if(tb)tb.innerHTML=tapBar(s);
+  if(st.taps>=s.n){st.ok=true;st.lock=true;st.done.add(st.i);sfx('ok');speak('做得好！'+s.ok);render();push();soloNext(3000);roomRepeat(3800)}
+  else if(st.mode==='student')push();}
+const tapBar=s=>Array.from({length:s.n},(_,i)=>`<span class="${i<st.taps?'on':''}"></span>`).join('');
+function ripple(x,y){const r=document.createElement('span');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';document.body.appendChild(r);setTimeout(()=>r.remove(),650)}
+
+/* ---------- rendering ---------- */
+const app=document.getElementById('app');
+const spk=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9 H7 L12 4 V20 L7 15 H3Z" fill="currentColor"/><path d="M16 8 a6 6 0 0 1 0 8 M18.5 5 a10 10 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+function render(){
+  document.body.className=presenter()&&st.view==='deck'?'is-deck':'';
+  let h='';
+  if((st.mode==='student'||st.mode==='solo')&&st.view==='deck')document.body.className='is-student';
+  if(st.view==='start')h=vStart();
+  else if(st.view==='keypad')h=vKeypad();
+  else if(st.view==='name')h=vName();
+  else if(presenter())h=vDeck();
+  else h=vStudent();
+  app.innerHTML=h;
+  runAnim();
+  const nm=document.getElementById('nm');if(nm)nm.focus();
+}
+function renderBits(){const r=document.getElementById('roster');if(r)r.innerHTML=roster();
+  const b=document.querySelector('#badge .led');if(b)b.className='led'+(st.conn?' on':'');
+  if(presenter()&&SL[st.i]&&SL[st.i].kind==='end'){const t=document.getElementById('results');if(t)t.innerHTML=results()}}
+function artNow(s){return s.kind==='tap'?s.art(st.ok?1:st.taps/s.n):s.kind==='one'?s.art(st.ok):s.art(st.k)}
+const btnOf=s=>s.btnK?s.btnK(st.k):s.btn;
+function stepList(s){if(!s.steps)return '';const cur=s.curK?s.curK(st.k):s.kind==='see'&&st.k?((st.k-1)%s.steps.length):-1;
+  return `<ol class="steps2">${s.steps.map((p,j)=>`<li class="${j===cur?'on':''}"><span class="n">${j+1}</span>${IC[p.ic]}<b>${p.t}</b></li>`).join('')}</ol>`}
+function doChip(s){
+  if(s.kind==='tap')return `<div class="dochip">學生：撳掣 ${s.n} 下</div>`;
+  if(s.kind==='one')return `<div class="dochip">學生：撳掣「${s.btn}」</div>`;
+  return `<div class="dochip soft">學生：撳掣「${btnOf(s)}」</div>`;}
+function vDeck(){const s=SL[st.i];
+  const partIdx=PARTS.indexOf(s.part);
+  let h=`<div class="dtop"><span class="part ${partIdx>=0?'p'+partIdx:''}">${esc(s.part)}</span><span class="pgno">${st.i+1} / ${SL.length}</span>
+   <div class="prog">${SL.map((x,j)=>`<span class="${j===st.i?'on':j<st.i?'past':''}"></span>`).join('')}</div>
+   <button class="btn sm" data-act="notes">${st.notes?'隱藏講稿':'講稿'}</button>
+   <button class="btn sm" data-act="sound">${st.sound?'聲音：開':'聲音：關'}</button>
+   ${st.mode==='host'?`<span class="badge" id="badge"><span class="led ${st.conn?'on':''}"></span>房號 <b class="rc">${esc(st.code)}</b></span>`:''}
+   <button class="btn sm" data-act="exit">退出</button></div>`;
+  if(s.cover)h+=`<div class="slide cover"><button class="emblem" id="artbox" data-act="press" aria-label="${esc(s.btn)}">${s.art()}</button>
+   <h2 class="stitle">${esc(s.title)}</h2>${(s.lines||[]).map(l=>`<p class="ln">${esc(l)}</p>`).join('')}<div class="keypill">${esc(s.key)}</div>
+   ${st.notes?`<div class="notes"><b>講稿</b>${esc(s.note)}</div>`:''}</div>`;
+  else h+=`<div class="slide ${s.navy?'navy':''}"><button class="artcard" id="artbox" data-act="press" aria-label="${esc(s.btn||'撳掣')}">${artNow(s)}</button>
+   <div class="col"><h2 class="stitle">${esc(s.title)}</h2>${(s.lines||[]).map(l=>`<p class="ln">${esc(l)}</p>`).join('')}${stepList(s)}
+   ${s.key?`<div class="keypill">${esc(s.key)}</div>`:''}
+   ${s.kind==='tap'||(s.tapAt&&st.k===s.tapAt)?`<div class="tapbar" id="tapbar">${tapBar(s)}</div>`:''}
+   ${st.ok?`<div class="okpill">✔ ${esc(s.ok)}</div>`:''}
+   ${s.kind!=='end'?doChip(s):''}
+   ${s.kind==='end'&&st.mode==='host'?`<div class="tbl" id="results">${results()}</div>`:''}
+   ${st.notes?`<div class="notes"><b>講稿</b>${esc(s.note)}</div>`:''}</div></div>`;
+  h+=`<div class="dbot">${st.mode==='host'?`<div class="roster" id="roster">${roster()}</div>`:'<div></div>'}
+   <div class="nav2"><button class="btn navp" data-act="prev" ${st.i===0?'disabled':''}>← 上一頁</button><button class="btn y navn" data-act="next" ${st.i===SL.length-1?'disabled':''}>下一頁 →</button></div></div>`;
+  return h;}
+function roster(){const ss=students();const s=SL[st.i];
+  if(!ss.length)return `<span class="empty">等學生用 iPad 輸入房號 ${esc(st.code)} 加入…</span>`;
+  return ss.map(p=>{const pr=p.presence;let cls='',t='';
+    if(pr.i!==st.i){t='同步中'}
+    else if(s.practice&&Array.isArray(pr.dn)&&pr.dn.includes(st.i)){cls='ok';t=pr.k?'✔ 再做緊':'✔ 完成'}
+    else if(s.kind==='see'||s.kind==='end'){if(pr.k>0){cls='ok';t='撳咗 '+pr.k}else t='未撳'}
+    else if(pr.ok||(Array.isArray(pr.dn)&&pr.dn.includes(st.i))){cls='ok';t=pr.ok?'✔ 完成':'✔ 再做緊'}
+    else if(s.kind==='tap'&&pr.t){cls='go';t=pr.t+' / '+s.n}
+    else t='等緊';
+    return `<span class="chip2"><b>${esc(pr.nm||'學生')}</b><span class="st ${cls}">${t}</span></span>`}).join('');}
+function results(){const ss=students();if(!ss.length)return '<p class="sub">冇學生連線。</p>';
+  const cols=PARTS.map(pt=>PRACTICE.filter(i=>SL[i].part===pt));
+  return `<table><thead><tr><th>學生</th>${PARTS.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>${ss.map(p=>{const dn=Array.isArray(p.presence.dn)?p.presence.dn:[];
+    return `<tr><td>${esc(p.presence.nm)}</td>${cols.map(c=>{const n=c.filter(i=>dn.includes(i)).length;return `<td class="${n===c.length?'yes':''}">${n} / ${c.length}</td>`}).join('')}</tr>`}).join('')}</tbody></table>`;}
+function vStudent(){
+  const solo=st.mode==='solo';
+  let h=`<div class="top">${solo?`<span class="badge">自己練習 · ${st.i+1} / ${SL.length}</span><button class="btn sm" data-act="prev" ${st.i===0?'disabled':''}>← 上一頁</button><button class="btn sm" data-act="next" ${st.i===SL.length-1?'disabled':''}>下一頁 →</button>`
+    :`<span class="badge" id="badge"><span class="led ${st.conn?'on':''}"></span>${esc(st.name)} · 房 ${esc(st.code)}</span>`}<span style="flex:1"></span>
+   <button class="btn sm" data-act="sound">${st.sound?'聲音：開':'聲音：關'}</button><button class="btn sm" data-act="exit">退出</button></div>`;
+  if(!solo&&!st.hostHere)return h+`<div class="center"><div style="width:140px">${IC.bolt}</div><h1 class="hero">等老師開始</h1><p class="sub">${esc(st.name)}，請望白板</p></div>`;
+  const s=SL[st.i];
+  const cnt=solo&&s.kind==='see'&&s.need>=10,cntDone=cnt&&st.k>=s.need;
+  const ic=s.kind==='tap'?'tapme':s.icK?s.icK(st.k):s.ic||'tapme',lab=s.kind==='tap'?(st.ok?'做得好':'拍拍！'):cnt?(cntDone?'做得好':`${s.btn}<small>撳 ${s.need} 下</small>`):btnOf(s)||'撳掣';
+  h+=`<div class="sgrid"><div class="sstage"><div class="art ${s.cover?'emb':''}" id="artbox" data-act="press">${artNow(s)}</div><p class="say">${esc(s.title)}</p>
+   ${(s.kind==='tap'&&!st.ok)||(s.tapAt&&st.k===s.tapAt)?`<div class="tapbar" id="tapbar">${tapBar(s)}</div>`:''}
+   ${cnt?`<p class="sub cnt">撳 ${s.need} 下 · ${Math.min(st.k,s.need)} / ${s.need}</p><div class="tapbar">${Array.from({length:s.need},(_,j)=>`<span class="${j<st.k?'on':''}"></span>`).join('')}</div>`:''}
+   ${st.ok?`<div class="banner ok">做得好！${esc(s.ok)}</div>`:''}</div>
+   <button class="bigpress ${st.ok||cntDone?'right':''}" data-act="press">${IC[ic]}<span>${(cnt?lab:esc(lab)).replace(/，/g,'，<br>')}</span></button></div>`;
+  return h;}
+function vStart(){const last=store.get('join',null);
+  return `<div class="center"><div style="width:140px">${IC.bolt}</div><h1 class="hero">電力安全官</h1><p class="sub">STEAM · KS3 · 第 1–2 週 · 辨識 USB 種類與安全連接</p>
+  ${st.msg?`<div class="msg" role="alert">${esc(st.msg)}</div>`:''}
+  <button class="btn y big" data-act="host">開始上堂<small>電子白板 · 老師用 · 開房間</small></button>
+  ${last&&last.code&&last.name?`<button class="btn g big" data-act="rejoin">加入房 ${esc(last.code)} · ${esc(last.name)}<small>iPad · 上次嘅設定</small></button>`:''}
+  <button class="btn big" data-act="join">加入房間<small>iPad · 學生用</small></button>
+</div>`;}
+function vKeypad(){const d=st.codeIn.padEnd(4,' ').split('');
+  return `<div class="center"><h1 class="hero">輸入房號</h1><div class="code">${d.map((c,i)=>`<span class="${i===st.codeIn.length?'cur':''}">${c.trim()}</span>`).join('')}</div>
+  <div class="keys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-act="k" data-k="${n}">${n}</button>`).join('')}<button class="key" data-act="kback" aria-label="刪除">⌫</button><button class="key" data-act="k" data-k="0">0</button><button class="key y" data-act="kback0">返回</button></div>
+  <button class="btn g big" data-act="solo">唔入房，自己練習<small>唔使房號 · 自己一部 iPad 做晒全部</small></button></div>`;}
+function vName(){return `<div class="center"><h1 class="hero">學生名稱</h1><p class="sub">房號 ${esc(st.codeIn)} · 老師可以幫手輸入</p>
+  ${st.msg?`<div class="msg" role="alert">${esc(st.msg)}</div>`:''}
+  <input class="name" id="nm" maxlength="16" value="${esc(st.name)}" autocomplete="off" aria-label="學生名稱">
+  <button class="btn y big" data-act="dojoin">加入</button><button class="btn" data-act="tokeypad">改房號</button></div>`;}
+
+/* page animations: loop until the first press on that page */
+let animT=null;
+function runAnim(){clearTimeout(animT);animT=null;
+  const s=st.view==='deck'&&SL[st.i];if(!s||!s.anim||st.k>0)return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const at=st.i;let f=0;
+  const step=()=>{if(st.view!=='deck'||st.i!==at||st.k>0)return;const fr=s.anim[f%s.anim.length];
+    const a=document.getElementById('artbox');if(a)a.innerHTML=fr[0]();
+    document.querySelectorAll('.steps2 li').forEach((li,j)=>li.classList.toggle('on',j===fr[1]));
+    f++;animT=setTimeout(step,fr[2]);};
+  step();}
+/* ---------- events ---------- */
+app.addEventListener('click',async e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;unlockAudio();
+  if(a==='solo'){st.mode='solo';st.msg='';st.done=new Set();st.hostHere=true;goSlide(0)}
+  else if(a==='single'){st.mode='single';st.msg='';st.done=new Set();goSlide(0)}
+  else if(a==='host'){st.msg='';let code=store.get('hostCode','');if(!/^\d{4}$/.test(code)){code=String(1000+Math.floor(Math.random()*9000));store.set('hostCode',code)}
+    st.mode='host';if(await joinRoom(code))goSlide(0);else{st.mode=null;render()}}
+  else if(a==='join'||a==='tokeypad'){st.msg='';st.codeIn='';st.view='keypad';render()}
+  else if(a==='rejoin'){const l=store.get('join',null);if(l){st.codeIn=l.code;st.name=l.name;await doJoin()}}
+  else if(a==='k'){if(st.codeIn.length<4){st.codeIn+=b.dataset.k;tone(600,0,.06,'triangle',.2);if(st.codeIn.length===4)st.view='name';render()}}
+  else if(a==='kback'){st.codeIn=st.codeIn.slice(0,-1);render()}
+  else if(a==='kback0'){st.view='start';render()}
+  else if(a==='dojoin'){const v=(document.getElementById('nm').value||'').trim();if(!v){st.msg='請輸入學生名稱';render();return}st.name=v.slice(0,16);await doJoin()}
+  else if(a==='exit'){leaveRoom();clearTimers();try{speechSynthesis.cancel()}catch(e){}st.mode=null;st.view='start';st.msg='';render()}
+  else if(a==='next')next();
+  else if(a==='prev')prev();
+  else if(a==='notes'){st.notes=!st.notes;store.set('notes',st.notes);render()}
+  else if(a==='sound'){st.sound=!st.sound;if(!st.sound)try{speechSynthesis.cancel()}catch(e){}render()}
+  else if(a==='press'){if(SL[st.i].kind!=='tap')press()}
+});
+/* tap-anywhere slides: any touch on the student's screen (or the picture on the board) counts */
+document.addEventListener('pointerdown',e=>{if(st.view!=='deck')return;const s=SL[st.i];if(!s||s.kind!=='tap'||st.ok)return;
+  if(e.target.closest('.top,.dtop,.dbot,.col'))return;if(presenter()&&!e.target.closest('#artbox'))return;unlockAudio();press(e.clientX,e.clientY)});
+async function doJoin(){st.msg='';st.mode='student';st.done=new Set();st.hostHere=false;st.lastKey='';
+  if(await joinRoom(st.codeIn)){store.set('join',{code:st.codeIn,name:st.name});store.set('name',st.name);st.view='deck';render();push()}
+  else{st.mode=null;st.view='start';render()}}
+/* Big USB switch types a key: any key = one press. On the board, arrow / page keys (or a clicker) turn the page */
+let swHeld=false;
+document.addEventListener('keydown',e=>{
+  if(e.target&&e.target.closest&&e.target.closest('input,textarea')){if(e.key==='Enter'&&e.target.id==='nm'){e.preventDefault();const b=app.querySelector('[data-act="dojoin"]');b&&b.click()}return}
+  if(st.view!=='deck')return;
+  if(['Shift','Control','Alt','Meta','CapsLock','Tab'].includes(e.key))return;
+  e.preventDefault();e.stopPropagation();
+  if(presenter()&&!e.repeat){if(e.key==='ArrowRight'||e.key==='PageDown'){next();return}if(e.key==='ArrowLeft'||e.key==='PageUp'){prev();return}}
+  if(e.repeat||swHeld)return;swHeld=true;unlockAudio();
+  const c=document.querySelector('.bigpress,.corner,#artbox');if(c){c.classList.add('pressed');setTimeout(()=>c.classList.remove('pressed'),180)}
+  press();},true);
+document.addEventListener('keyup',e=>{swHeld=false;if(st.view==='deck'&&!(e.target&&e.target.closest&&e.target.closest('input,textarea')))e.preventDefault()},true);
+window.addEventListener('blur',()=>{swHeld=false});
+
+render();
+})();
+</script>
+
+</body></html>
